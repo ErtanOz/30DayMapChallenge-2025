@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cologne Interactive Bicycle Lane Map</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin=""/>
+    
+    <style>
+        /* ===== CSS VARIABLES FOR THEMING ===== */
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --accent-color: #00ffff;
+            --accent-hover: #00cccc;
+            --control-bg: rgba(45, 45, 45, 0.9);
+            --control-border: #555555;
+            --shadow-glow: drop-shadow(0 0 5px #00ffff) drop-shadow(0 0 10px #00ffff) drop-shadow(0 0 15px #00ffff);
+            --shadow-intense: drop-shadow(0 0 8px #00ffff) drop-shadow(0 0 16px #00ffff) drop-shadow(0 0 24px #00ffff) drop-shadow(0 0 32px #00ffff);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --accent-color: #0099cc;
+            --accent-hover: #0077aa;
+            --control-bg: rgba(255, 255, 255, 0.95);
+            --control-border: #dddddd;
+            --shadow-glow: drop-shadow(0 0 3px #0099cc) drop-shadow(0 0 6px #0099cc) drop-shadow(0 0 9px #0099cc);
+            --shadow-intense: drop-shadow(0 0 6px #0099cc) drop-shadow(0 0 12px #0099cc) drop-shadow(0 0 18px #0099cc) drop-shadow(0 0 24px #0099cc);
+        }
+
+        /* ===== GLOBAL STYLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ===== MAP CONTAINER ===== */
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+
+        /* ===== ENHANCED BICYCLE LANE STYLES ===== */
+        .neon-glow {
+            filter: var(--shadow-glow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .neon-highlight {
+            filter: var(--shadow-intense);
+            animation: pulse 2s infinite;
+        }
+
+        .neon-selected {
+            filter: brightness(1.5) drop-shadow(0 0 10px #ff6600) 
+                    drop-shadow(0 0 20px #ff6600) drop-shadow(0 0 30px #ff6600) 
+                    drop-shadow(0 0 40px #ff6600);
+            z-index: 1000;
+        }
+
+        .neon-dashed {
+            stroke-dasharray: 10,5;
+            filter: var(--shadow-glow);
+        }
+
+        @keyframes pulse {
+            0%, 100% { filter: var(--shadow-intense); }
+            50% { filter: brightness(1.2) drop-shadow(0 0 6px #00ffff) 
+                           drop-shadow(0 0 12px #00ffff) drop-shadow(0 0 18px #00ffff); }
+        }
+
+        /* ===== CUSTOM CONTROL STYLES ===== */
+        .leaflet-control {
+            border: none !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+            border-radius: 8px !important;
+        }
+
+        .custom-control {
+            background: var(--control-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--control-border);
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .custom-control:hover {
+            background: var(--accent-color);
+            color: #000;
+            transform: translateY(-2px);
+        }
+
+        .custom-control:focus {
+            outline: 2px solid var(--accent-color);
+            outline-offset: 2px;
+        }
+
+        /* ===== ENHANCED SEARCH FILTER ===== */
+        #filter-control {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        #search-input {
+            width: 280px;
+            padding: 12px 16px;
+            border: 1px solid var(--control-border);
+            border-radius: 8px;
+            background: var(--control-bg);
+            color: var(--text-primary);
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+        }
+
+        #search-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        #search-input:focus {
+            outline: 2px solid var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        /* ===== ENHANCED LEGEND CARD ===== */
+        .legend-card {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--control-bg);
+            border: 1px solid var(--control-border);
+            border-radius: 12px;
+            padding: 20px;
+            min-width: 220px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--accent-color);
+            font-size: 16px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .legend-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(4px);
+        }
+
+        .legend-color {
+            width: 24px;
+            height: 4px;
+            margin-right: 12px;
+            border-radius: 2px;
+            background: var(--accent-color);
+        }
+
+        .legend-color.dashed {
+            background: repeating-linear-gradient(
+                90deg,
+                var(--accent-color) 0,
+                var(--accent-color) 10px,
+                transparent 10px,
+                transparent 15px
+            );
+        }
+
+        /* ===== ENHANCED BASEMAP SWITCHER ===== */
+        .basemap-switcher {
+            position: absolute;
+            bottom: 100px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .basemap-btn {
+            padding: 10px 15px;
+            background: var(--control-bg);
+            border: 1px solid var(--control-border);
+            color: var(--text-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            min-width: 140px;
+            text-align: center;
+        }
+
+        .basemap-btn:hover {
+            background: var(--accent-color);
+            color: #000;
+        }
+
+        .basemap-btn.active {
+            background: var(--accent-color);
+            color: #000;
+            font-weight: 600;
+        }
+
+        /* ===== ENHANCED TOOLTIPS ===== */
+        .custom-tooltip {
+            background: var(--control-bg) !important;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--accent-color) !important;
+            border-radius: 8px !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        /* ===== ENHANCED POPUP STYLING ===== */
+        .leaflet-popup-content-wrapper {
+            background: var(--control-bg) !important;
+            color: var(--text-primary) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        .leaflet-popup-tip {
+            background: var(--control-bg) !important;
+        }
+
+        .popup-content {
+            min-width: 240px;
+        }
+
+        .popup-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .popup-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--control-border);
+        }
+
+        .popup-table td:first-child {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+
+        /* ===== LOADING INDICATOR ===== */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            background: var(--control-bg);
+            padding: 24px;
+            border-radius: 12px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--control-border);
+            border-top: 3px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 768px) {
+            #search-input {
+                width: 200px;
+            }
+            
+            .legend-card {
+                right: 10px;
+                top: 10px;
+                min-width: 180px;
+            }
+        }
+
+        /* ===== CONTROLS ===== */
+        .leaflet-control-attribution {
+            background: var(--control-bg) !important;
+            color: var(--text-secondary) !important;
+        }
+
+        .leaflet-control-attribution a {
+            color: var(--accent-color) !important;
+        }
+
+        /* ===== DATA SOURCE INDICATOR ===== */
+        .data-source {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: var(--control-bg);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+    <!-- ===== LOADING INDICATOR ===== -->
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <div>Loading Cologne bicycle lanes...</div>
+        <div id="loading-status" style="font-size: 12px; margin-top: 8px; opacity: 0.7;">Initializing enhanced features</div>
+    </div>
+
+    <!-- ===== SEARCH FILTER CONTROL ===== -->
+    <div id="filter-control">
+        <input type="text" 
+               id="search-input" 
+               placeholder="🔍 Search bicycle lanes by name, street, or type..."
+               aria-label="Search bicycle lanes">
+        <button id="clear-filter" class="custom-control" title="Clear search">✕</button>
+    </div>
+
+    <!-- ===== MAP CONTAINER ===== -->
+    <div id="map" role="application" aria-label="Interactive map of Cologne bicycle lanes"></div>
+
+    <!-- ===== LEGEND CARD ===== -->
+    <div class="legend-card" role="complementary" aria-label="Map legend">
+        <div class="legend-title">🗺️ Map Legend</div>
+        <div class="legend-item" onclick="showAllLanes()">
+            <div class="legend-color neon-glow"></div>
+            <span>Active Bicycle Lanes</span>
+        </div>
+        <div class="legend-item" onclick="highlightLanes('dashed')">
+            <div class="legend-color dashed"></div>
+            <span>Highlighted Lanes</span>
+        </div>
+        <div class="legend-item" onclick="resetAllLayers()">
+            <div class="legend-color" style="background: #666; opacity: 0.3;"></div>
+            <span>Reset All</span>
+        </div>
+        <div style="margin-top: 12px; font-size: 11px; color: var(--text-secondary); border-top: 1px solid var(--control-border); padding-top: 12px;">
+            💡 <strong>Tips:</strong><br>
+            Hover: Detailed info<br>
+            Click: Focus lane<br>
+            Shift+Click: Multi-select
+        </div>
+    </div>
+
+    <!-- ===== BASEMAP SWITCHER ===== -->
+    <div class="basemap-switcher" role="group" aria-label="Basemap selection">
+        <button class="basemap-btn active" data-basemap="darkmatter">🌙 Dark Matter</button>
+        <button class="basemap-btn" data-basemap="lightmatter">☀️ Light Matter</button>
+        <button class="basemap-btn" data-basemap="positron">🌟 Positron</button>
+        <button class="basemap-btn" data-basemap="basemap">🗺️ OSM Standard</button>
+    </div>
+
+    <!-- ===== THEME TOGGLE ===== -->
+    <div class="theme-toggle">
+        <button id="theme-toggle" class="custom-control">🌙</button>
+    </div>
+
+    <!-- ===== RESET VIEW BUTTON ===== -->
+    <div class="reset-view-btn">
+        <button id="reset-view" class="custom-control">🎯 Reset View</button>
+    </div>
+
+    <!-- ===== DATA SOURCE INDICATOR ===== -->
+    <div id="data-source" class="data-source">Loading data...</div>
+
+    <!-- ===== LEAFLET JAVASCRIPT ===== -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+            crossorigin=""></script>
+
+    <script>
+        // ========================================
+        // EMBEDDED SAMPLE DATA (FALLBACK)
+        // ========================================
+        const SAMPLE_BICYCLE_DATA = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "_id": 1,
+                        "name": "Rheinpark bicycle lane",
+                        "strasse": "Rheinparkweg",
+                        "typ": "Protected bike lane",
+                        "kategorie": "Class A1",
+                        "length": 2500
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [
+                            [6.9450, 50.9380],
+                            [6.9470, 50.9390],
+                            [6.9490, 50.9400],
+                            [6.9510, 50.9410],
+                            [6.9530, 50.9420]
+                        ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "_id": 2,
+                        "name": "Köln Bicycle Ring",
+                        "strasse": "Kölner Fahrradring",
+                        "typ": "Shared road",
+                        "kategorie": "Class B1",
+                        "length": 3200
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [
+                            [6.9600, 50.9375],
+                            [6.9620, 50.9385],
+                            [6.9640, 50.9395],
+                            [6.9660, 50.9405],
+                            [6.9680, 50.9415]
+                        ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "_id": 3,
+                        "name": "Dom District Lane",
+                        "strasse": "Domkloster",
+                        "typ": "Protected bike lane",
+                        "kategorie": "Class A1",
+                        "length": 1800
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [
+                            [6.9570, 50.9410],
+                            [6.9580, 50.9405],
+                            [6.9590, 50.9400],
+                            [6.9600, 50.9395],
+                            [6.9610, 50.9390]
+                        ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "_id": 4,
+                        "name": "Nippes Green Lane",
+                        "strasse": "Nippeser Grüner Weg",
+                        "typ": "Bicycle street",
+                        "kategorie": "Class A2",
+                        "length": 2100
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [
+                            [6.9400, 50.9500],
+                            [6.9415, 50.9510],
+                            [6.9430, 50.9520],
+                            [6.9445, 50.9530],
+                            [6.9460, 50.9540]
+                        ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "_id": 5,
+                        "name": "Mülheim Bridge Lane",
+                        "strasse": "Mülheimer Brücke",
+                        "typ": "Bridge bike lane",
+                        "kategorie": "Class A1",
+                        "length": 1200
+                    },
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [
+                            [6.9650, 50.9200],
+                            [6.9665, 50.9215],
+                            [6.9680, 50.9230],
+                            [6.9695, 50.9245],
+                            [6.9710, 50.9260]
+                        ]
+                    }
+                }
+            ]
+        };
+
+        // ========================================
+        // ENHANCED CONFIGURATION
+        // ========================================
+        const CONFIG = {
+            // Map settings
+            center: [50.9375, 6.9603], // Cologne coordinates
+            defaultZoom: 12,
+            
+            // Enhanced styling
+            neonColor: '#00ffff',
+            highlightColor: '#ff6600',
+            defaultStrokeWeight: 4,
+            highlightStrokeWeight: 6,
+            selectedStrokeWeight: 8,
+            defaultOpacity: 0.9,
+            
+            // Performance
+            preferCanvas: true,
+            
+            // Properties
+            displayFields: ['name', 'strasse', 'typ', 'kategorie', 'length'],
+            
+            // Animation durations
+            animationDuration: 300
+        };
+
+        // ========================================
+        // ENHANCED GLOBAL VARIABLES
+        // ========================================
+        let map;
+        let bicycleLayer;
+        let originalBounds = null;
+        let geojsonData = null;
+        let selectedLayers = new Set();
+        let styleMode = 'normal';
+        let dataSource = 'embedded'; // or 'external'
+
+        // ========================================
+        // ENHANCED MAP INITIALIZATION
+        // ========================================
+        function initMap() {
+            // Initialize map
+            map = L.map('map', {
+                center: CONFIG.center,
+                zoom: CONFIG.defaultZoom,
+                preferCanvas: CONFIG.preferCanvas,
+                zoomControl: false,
+                attributionControl: true
+            });
+
+            // Add controls
+            L.control.zoom({ position: 'topleft' }).addTo(map);
+            L.control.scale({ position: 'topleft', imperial: false }).addTo(map);
+
+            // Initialize with CARTO Dark Matter
+            setBasemap('darkmatter');
+            
+            // Load bicycle lane data
+            loadBicycleData();
+            
+            // Initialize UI controls
+            initUIEvents();
+        }
+
+        // ========================================
+        // ENHANCED DATA LOADING WITH FALLBACK
+        // ========================================
+        async function loadBicycleData() {
+            const loadingStatus = document.getElementById('loading-status');
+            const dataSourceIndicator = document.getElementById('data-source');
+            
+            try {
+                loadingStatus.textContent = 'Trying to load external GeoJSON...';
+                
+                // Try to load external file first
+                const response = await fetch('./Fahrrad-Linien_cologne.geojson');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                geojsonData = await response.json();
+                dataSource = 'external';
+                dataSourceIndicator.textContent = '✅ Loaded external bicycle lane data';
+                
+                console.log(`Loaded ${geojsonData.features.length} features from external file`);
+                
+            } catch (error) {
+                console.log('External file failed, using embedded sample data:', error.message);
+                loadingStatus.textContent = 'Using embedded sample data...';
+                
+                // Use embedded sample data
+                geojsonData = SAMPLE_BICYCLE_DATA;
+                dataSource = 'embedded';
+                dataSourceIndicator.innerHTML = '📦 Using embedded sample data<br><small>For full dataset, run on server</small>';
+                
+                console.log(`Using embedded sample with ${geojsonData.features.length} features`);
+            }
+            
+            // Process and display the data
+            processAndDisplayData(geojsonData);
+            
+            // Hide loading with animation
+            setTimeout(() => {
+                const loading = document.getElementById('loading');
+                loading.style.opacity = '0';
+                loading.style.transform = 'translate(-50%, -50%) scale(0.9)';
+                setTimeout(() => loading.style.display = 'none', 300);
+            }, 1000);
+        }
+
+        function processAndDisplayData(data) {
+            // Add calculated properties
+            data.features = data.features.map((feature, index) => {
+                if (!feature.properties) feature.properties = {};
+                feature.properties._id = index + 1;
+                
+                // Calculate approximate length if not present
+                if (!feature.properties.length && feature.geometry && feature.geometry.coordinates) {
+                    feature.properties.length = calculateApproximateLength(feature.geometry.coordinates);
+                }
+                
+                return feature;
+            });
+            
+            createBicycleLayer(data);
+            originalBounds = bicycleLayer.getBounds();
+            
+            console.log(`Processed and displayed ${data.features.length} bicycle lanes`);
+        }
+
+        function calculateApproximateLength(coordinates) {
+            let length = 0;
+            for (let i = 0; i < coordinates.length - 1; i++) {
+                const [lon1, lat1] = coordinates[i];
+                const [lon2, lat2] = coordinates[i + 1];
+                length += Math.sqrt(Math.pow(lon2 - lon1, 2) + Math.pow(lat2 - lat1, 2));
+            }
+            return Math.round(length * 111000); // Rough conversion to meters
+        }
+
+        function createBicycleLayer(data) {
+            if (bicycleLayer) {
+                map.removeLayer(bicycleLayer);
+            }
+
+            bicycleLayer = L.geoJSON(data, {
+                style: getDefaultStyle,
+                onEachFeature: addFeatureEvents,
+                preferCanvas: CONFIG.preferCanvas
+            }).addTo(map);
+
+            if (bicycleLayer.getBounds().isValid()) {
+                map.fitBounds(bicycleLayer.getBounds(), { padding: [30, 30] });
+            }
+        }
+
+        // ========================================
+        // STYLING FUNCTIONS
+        // ========================================
+        function getDefaultStyle(feature) {
+            return {
+                color: CONFIG.neonColor,
+                weight: CONFIG.defaultStrokeWeight,
+                opacity: CONFIG.defaultOpacity,
+                className: 'neon-glow'
+            };
+        }
+
+        function getHighlightStyle() {
+            return {
+                color: CONFIG.neonColor,
+                weight: CONFIG.highlightStrokeWeight,
+                opacity: 1.0,
+                className: 'neon-highlight'
+            };
+        }
+
+        function getSelectedStyle() {
+            return {
+                color: CONFIG.highlightColor,
+                weight: CONFIG.selectedStrokeWeight,
+                opacity: 1.0,
+                className: 'neon-selected'
+            };
+        }
+
+        function getFilteredStyle() {
+            return {
+                color: CONFIG.neonColor,
+                weight: 2,
+                opacity: 0.15,
+                className: ''
+            };
+        }
+
+        // ========================================
+        // FEATURE INTERACTIONS
+        // ========================================
+        function addFeatureEvents(feature, layer) {
+            layer._featureId = feature.properties._id;
+            
+            // Enhanced hover interactions
+            layer.on('mouseover', function(e) {
+                handleHover(e.target, true);
+            });
+
+            layer.on('mouseout', function(e) {
+                handleHover(e.target, false);
+            });
+
+            // Enhanced click interactions
+            layer.on('click', function(e) {
+                handleClick(e, layer, e.originalEvent);
+            });
+
+            // Context menu
+            layer.on('contextmenu', function(e) {
+                handleRightClick(e, layer);
+            });
+        }
+
+        function handleHover(layer, isHover) {
+            if (isHover) {
+                if (!selectedLayers.has(layer._featureId)) {
+                    layer.setStyle(getHighlightStyle());
+                    layer.bringToFront();
+                }
+                
+                const tooltip = createTooltip(layer.feature.properties);
+                layer.bindTooltip(tooltip, {
+                    permanent: false,
+                    direction: 'center',
+                    className: 'custom-tooltip'
+                }).openTooltip();
+            } else {
+                if (!selectedLayers.has(layer._featureId)) {
+                    layer.setStyle(getDefaultStyle());
+                }
+                layer.closeTooltip();
+            }
+        }
+
+        function handleClick(e, layer, originalEvent) {
+            const isShiftClick = originalEvent.shiftKey;
+            const isCtrlClick = originalEvent.ctrlKey || originalEvent.metaKey;
+            
+            if (isShiftClick) {
+                toggleSelection(layer);
+            } else if (isCtrlClick) {
+                focusOnLane(layer);
+            } else {
+                clearSelections();
+                selectLayer(layer);
+            }
+        }
+
+        function handleRightClick(e, layer) {
+            const contextMenu = L.popup()
+                .setLatLng(e.latlng)
+                .setContent(`
+                    <div class="popup-content">
+                        <div style="font-weight: 600; margin-bottom: 8px;">Lane Options</div>
+                        <button onclick="zoomToLane(${layer._featureId})" style="margin: 2px; padding: 4px 8px; background: var(--accent-color); color: #000; border: none; border-radius: 4px; cursor: pointer;">Zoom Here</button>
+                        <button onclick="highlightLane(${layer._featureId})" style="margin: 2px; padding: 4px 8px; background: var(--accent-color); color: #000; border: none; border-radius: 4px; cursor: pointer;">Highlight</button>
+                    </div>
+                `)
+                .openOn(map);
+        }
+
+        // ========================================
+        // TOOLTIP & POPUP FUNCTIONS
+        // ========================================
+        function createTooltip(properties) {
+            const name = properties.name || properties.strasse || `Lane ${properties._id}`;
+            const length = properties.length ? `${(properties.length / 1000).toFixed(1)}km` : 'Unknown';
+            
+            return `<strong style="color: var(--accent-color);">${name}</strong><br><small>Length: ${length}</small>`;
+        }
+
+        function createPopup(properties) {
+            let html = '<div class="popup-content">';
+            html += `<h3 style="color: var(--accent-color); margin-bottom: 12px;">🚴‍♂️ ${properties.name || properties.strasse || 'Bicycle Lane'}</h3>`;
+            html += '<table class="popup-table">';
+            
+            const displayProps = CONFIG.displayFields.filter(field => properties[field]);
+            if (displayProps.length > 0) {
+                displayProps.forEach(prop => {
+                    if (prop === 'length' && properties[prop]) {
+                        html += `<tr><td>${prop.charAt(0).toUpperCase() + prop.slice(1)}:</td><td>${(properties[prop] / 1000).toFixed(1)} km</td></tr>`;
+                    } else {
+                        html += `<tr><td>${prop.charAt(0).toUpperCase() + prop.slice(1)}:</td><td>${properties[prop]}</td></tr>`;
+                    }
+                });
+            } else {
+                Object.keys(properties).forEach(key => {
+                    if (properties[key] !== null && properties[key] !== '') {
+                        const value = key === 'length' ? `${(properties[key] / 1000).toFixed(1)} km` : properties[key];
+                        html += `<tr><td>${key}:</td><td>${value}</td></tr>`;
+                    }
+                });
+            }
+            html += '</table>';
+            
+            if (properties.length) {
+                html += `<div style="background: var(--accent-color); color: #000; padding: 8px; border-radius: 4px; margin-top: 12px; text-align: center; font-weight: 600;">📏 ${(properties.length / 1000).toFixed(1)} km</div>`;
+            }
+            
+            html += '</div>';
+            return html;
+        }
+
+        // ========================================
+        // SELECTION SYSTEM
+        // ========================================
+        function selectLayer(layer) {
+            selectedLayers.add(layer._featureId);
+            layer.setStyle(getSelectedStyle());
+            layer.bringToFront();
+            
+            const popup = createPopup(layer.feature.properties);
+            L.popup({ maxWidth: 300 })
+                .setLatLng(layer.getBounds().getCenter())
+                .setContent(popup)
+                .openOn(map);
+        }
+
+        function toggleSelection(layer) {
+            if (selectedLayers.has(layer._featureId)) {
+                selectedLayers.delete(layer._featureId);
+                layer.setStyle(getDefaultStyle());
+            } else {
+                selectedLayers.add(layer._featureId);
+                layer.setStyle(getSelectedStyle());
+            }
+        }
+
+        function clearSelections() {
+            selectedLayers.forEach(featureId => {
+                bicycleLayer.eachLayer(layer => {
+                    if (layer._featureId === featureId) {
+                        layer.setStyle(getDefaultStyle());
+                    }
+                });
+            });
+            selectedLayers.clear();
+        }
+
+        function focusOnLane(layer) {
+            map.fitBounds(layer.getBounds(), { padding: [50, 50], duration: 0.8 });
+            
+            const originalStyle = layer.options;
+            layer.setStyle(getHighlightStyle());
+            
+            setTimeout(() => {
+                if (!selectedLayers.has(layer._featureId)) {
+                    layer.setStyle(getDefaultStyle());
+                }
+            }, 2000);
+        }
+
+        // ========================================
+        // BASEMAP SYSTEM
+        // ========================================
+        function setBasemap(type) {
+            map.eachLayer(function(layer) {
+                if (layer instanceof L.TileLayer) {
+                    map.removeLayer(layer);
+                }
+            });
+
+            const basemaps = {
+                darkmatter: {
+                    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+                },
+                lightmatter: {
+                    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+                },
+                positron: {
+                    url: 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
+                    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+                },
+                basemap: {
+                    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    attribution: '&copy; OpenStreetMap contributors'
+                }
+            };
+
+            const basemap = basemaps[type] || basemaps.darkmatter;
+
+            L.tileLayer(basemap.url, {
+                attribution: basemap.attribution,
+                maxZoom: 19
+            }).addTo(map);
+
+            updateBasemapButtons(type);
+        }
+
+        function updateBasemapButtons(activeType) {
+            document.querySelectorAll('.basemap-btn').forEach(btn => {
+                if (btn.dataset.basemap === activeType) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        // ========================================
+        // UI CONTROLS
+        // ========================================
+        function initUIEvents() {
+            // Theme toggle
+            const themeToggle = document.getElementById('theme-toggle');
+            themeToggle.addEventListener('click', toggleTheme);
+            
+            const savedTheme = localStorage.getItem('bicycle-map-theme') || 'dark';
+            setTheme(savedTheme);
+
+            // Basemap switcher
+            document.querySelectorAll('.basemap-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    setBasemap(this.dataset.basemap);
+                });
+            });
+
+            // Reset view
+            document.getElementById('reset-view').addEventListener('click', resetView);
+
+            // Search filter
+            const searchInput = document.getElementById('search-input');
+            const clearFilter = document.getElementById('clear-filter');
+            
+            let filterTimeout;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(filterTimeout);
+                filterTimeout = setTimeout(() => {
+                    filterBicycleLanes(this.value);
+                }, 300);
+            });
+
+            clearFilter.addEventListener('click', function() {
+                searchInput.value = '';
+                filterBicycleLanes('');
+                searchInput.focus();
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                switch(e.key) {
+                    case 'Escape':
+                        clearSelections();
+                        searchInput.value = '';
+                        filterBicycleLanes('');
+                        break;
+                    case '1':
+                        setStyleMode('normal');
+                        break;
+                    case '2':
+                        setStyleMode('dashed');
+                        break;
+                }
+            });
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+            localStorage.setItem('bicycle-map-theme', newTheme);
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            
+            const themeToggle = document.getElementById('theme-toggle');
+            themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // ========================================
+        // FILTERING FUNCTIONALITY
+        // ========================================
+        function filterBicycleLanes(searchTerm) {
+            if (!bicycleLayer) return;
+
+            const normalizedTerm = searchTerm.toLowerCase().trim();
+            
+            bicycleLayer.eachLayer(function(layer) {
+                const properties = layer.feature.properties;
+                let match = false;
+
+                for (let key in properties) {
+                    if (properties[key] && 
+                        String(properties[key]).toLowerCase().includes(normalizedTerm)) {
+                        match = true;
+                        break;
+                    }
+                }
+
+                if (match || normalizedTerm === '') {
+                    if (!selectedLayers.has(layer._featureId)) {
+                        layer.setStyle(getDefaultStyle());
+                    }
+                } else {
+                    layer.setStyle(getFilteredStyle());
+                }
+            });
+        }
+
+        function setStyleMode(mode) {
+            styleMode = mode;
+            const color = mode === 'dashed' ? '#00ffff' : CONFIG.neonColor;
+            const dashArray = mode === 'dashed' ? '10,5' : null;
+            
+            bicycleLayer.eachLayer(layer => {
+                if (!selectedLayers.has(layer._featureId)) {
+                    const style = {
+                        color: color,
+                        weight: CONFIG.defaultStrokeWeight,
+                        opacity: CONFIG.defaultOpacity,
+                        className: mode === 'dashed' ? 'neon-dashed' : 'neon-glow'
+                    };
+                    if (dashArray) style.dashArray = dashArray;
+                    layer.setStyle(style);
+                }
+            });
+        }
+
+        // ========================================
+        // VIEW MANAGEMENT
+        // ========================================
+        function resetView() {
+            if (originalBounds && originalBounds.isValid()) {
+                map.animateTo(originalBounds.getCenter(), {
+                    zoom: CONFIG.defaultZoom,
+                    duration: CONFIG.animationDuration
+                });
+                setTimeout(() => {
+                    map.fitBounds(originalBounds, { padding: [20, 20] });
+                }, CONFIG.animationDuration);
+            }
+        }
+
+        function resetAllLayers() {
+            clearSelections();
+            setStyleMode('normal');
+            document.getElementById('search-input').value = '';
+            filterBicycleLanes('');
+            resetView();
+        }
+
+        function showAllLanes() {
+            filterBicycleLanes('');
+            resetView();
+        }
+
+        function highlightLanes(mode = 'highlight') {
+            setStyleMode(mode);
+        }
+
+        // ========================================
+        // GLOBAL FUNCTIONS FOR LEGEND
+        // ========================================
+        window.showAllLanes = showAllLanes;
+        window.highlightLanes = highlightLanes;
+        window.resetAllLayers = resetAllLayers;
+        window.zoomToLane = function(featureId) {
+            bicycleLayer.eachLayer(layer => {
+                if (layer._featureId === featureId) {
+                    map.fitBounds(layer.getBounds(), { padding: [50, 50] });
+                }
+            });
+        };
+        window.highlightLane = function(featureId) {
+            bicycleLayer.eachLayer(layer => {
+                if (layer._featureId === featureId) {
+                    layer.setStyle(getHighlightStyle());
+                    setTimeout(() => {
+                        if (!selectedLayers.has(layer._featureId)) {
+                            layer.setStyle(getDefaultStyle());
+                        }
+                    }, 3000);
+                }
+            });
+        };
+
+        // ========================================
+        // INITIALIZATION
+        // ========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            
+            console.log('🚴‍♂️ Enhanced Cologne Bicycle Map initialized');
+            console.log('📊 Features: CARTO basemaps, multi-select, enhanced interactions');
+        });
+
+        // Window resize handling
+        window.addEventListener('resize', function() {
+            if (map) {
+                map.invalidateSize();
+            }
+        });
+    </script>
+</body>
+</html>
