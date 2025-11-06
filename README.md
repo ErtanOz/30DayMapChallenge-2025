@@ -1,7 +1,7 @@
 | # | Theme | Project | Link to Map|
 |---|---|---|---|
 | 1 | Points |Cologne’s monuments | https://ertanoz.github.io/30DayMapChallenge-2025/Day%201:%20Points/cologne-3d-monuments.html |
-| 2 | Lines | Cologne Interactive Bicycle Lane Map | https://ertanoz.github.io/30DayMapChallenge-2025/Day%202:%20Lines/index.html|
+| 2 | Lines | Cologne Interactive Bicycle Lane Map | [https://ertanoz.github.io/30DayMapChallenge-2025/Day%202:%20Lines/index.htm](https://ertanoz.github.io/30DayMapChallenge-2025/Day_2_lines/index.html)|
 | 3 | Polygons | | |
 | 4 | Data Challenge | Kölner Museen Virtuell | https://ion.cesium.com/stories/viewer/?id=aeb5bfef-187d-41f6-b465-3e53b5f33f54|
 | 5 | Earth | | |
