@@ -8,7 +8,7 @@ To better highlight the most active areas, I used cluster visualization.
 
 🗺️ Explore. Click. Discover Cologne’s heritage.
 
-𝗟𝗶𝗻𝗸 𝘁𝗼 𝗺𝗮𝗽: https://lnkd.in/e5hVZ_FH
+𝗟𝗶𝗻𝗸 𝘁𝗼 𝗺𝗮𝗽: [https://lnkd.in/e5hVZ_FH](https://ertanoz.github.io/30DayMapChallenge-2025/Day_1_points/cologne-3d-monuments%20copy.html)
 
 🗂️ 𝗗𝗮𝘁𝗮 𝘀𝗼𝘂𝗿𝗰𝗲𝘀:
 @𝘖ffene𝘋𝘢𝘵en𝘒ö𝘭𝘯
