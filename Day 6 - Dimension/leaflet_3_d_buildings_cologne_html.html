@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cologne — 3D Buildings (OSM)</title>
+  <!-- MapLibre GL CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.3.2/dist/maplibre-gl.css" />
+  <style>
+    html, body, #map { height: 100%; margin: 0; }
+    .maplibregl-ctrl-attrib { font-size: 12px; }
+    .maplibregl-ctrl-group > button { border-radius: 8px; }
+    .topbar {
+      position: absolute; z-index: 1000; left: 12px; top: 12px;
+      background: rgba(255,255,255,0.9); backdrop-filter: blur(3px);
+      border-radius: 12px; box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+      padding: 10px 12px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
+    .topbar h1 { font-size: 14px; margin: 0 0 6px; font-weight: 600; }
+    .topbar .hint { font-size: 12px; opacity: 0.8; }
+    .ctrls { display:flex; gap:6px; margin-top:8px; flex-wrap: wrap; }
+    .ctrls button {
+      border: 1px solid #ddd; border-radius: 10px; padding: 6px 10px; cursor: pointer;
+      background: #fff; font-size: 12px;
+    }
+    .ctrls button:hover { background:#f4f4f4; }
+    /* Simple error banner */
+    #errorBanner {
+      position: fixed; inset: 16px; z-index: 2000; display: none;
+      background: #fff3f3; border: 1px solid #f3c2c2; color: #7a1f1f;
+      border-radius: 12px; padding: 12px 14px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    }
+    #errorBanner pre { white-space: pre-wrap; font-size: 12px; }
+    /* Diagnostics panel (appears when ?debug=1) */
+    #diag { position: absolute; right: 12px; bottom: 12px; width: 360px; max-height: 40vh; overflow:auto; display:none;
+      background: rgba(255,255,255,0.92); border: 1px solid #e8e8e8; border-radius: 12px; padding:10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    }
+    #diag b { color:#111 }
+    #diag .ok { color: #0b7a0b }
+    #diag .warn { color: #b36b00 }
+    #diag .err { color: #b00000 }
+  </style>
+</head>
+<body>
+  <noscript>
+    <div style="padding:12px;font-family:system-ui">This page needs JavaScript enabled.</div>
+  </noscript>
+
+  <div id="map"></div>
+
+  <div class="topbar">
+    <h1>Cologne — 3D Buildings</h1>
+    <div class="hint">Right-drag (or hold <b>Ctrl</b>) to tilt/rotate. Mouse wheel = zoom.</div>
+    <div class="ctrls">
+      <button id="btn-center">Re-center Cologne</button>
+      <button id="btn-tilt">Tilt 55°</button>
+      <button id="btn-flat">Flat (2D)</button>
+      <button id="btn-rotate-left">Rotate ◄</button>
+      <button id="btn-rotate-right">Rotate ►</button>
+    </div>
+  </div>
+
+  <div id="errorBanner"></div>
+  <div id="diag"></div>
+
+  <!-- MapLibre GL JS -->
+  <script src="https://unpkg.com/maplibre-gl@4.3.2/dist/maplibre-gl.js"></script>
+
+  <script>
+    // --- Diagnostics helpers ("test cases") ---
+    const qs = new URLSearchParams(location.search);
+    const debugOn = qs.get('debug') === '1';
+    const $diag = document.getElementById('diag');
+    function log(line, cls) {
+      if (!debugOn) return;
+      $diag.style.display = 'block';
+      const row = document.createElement('div');
+      row.className = cls || '';
+      row.textContent = line;
+      $diag.appendChild(row);
+      console[(cls === 'err' ? 'error' : cls === 'warn' ? 'warn' : 'log')](line);
+    }
+
+    function showError(msg, detail) {
+      const el = document.getElementById('errorBanner');
+      el.style.display = 'block';
+      el.innerHTML = '<b>Setup error:</b> ' + (msg || 'Unknown error') + (detail ? '<pre>' + detail + '</pre>' : '');
+      console.error('[3D Cologne] ' + msg, detail || '');
+      log('ERROR: ' + msg, 'err');
+      if (detail) log(String(detail), 'err');
+    }
+
+    const LEVEL_HEIGHT_METERS = 3.3;
+    function toNumber(val) {
+      if (val === null || val === undefined) return NaN;
+      if (typeof val === 'number') return Number.isFinite(val) ? val : NaN;
+      const str = String(val).trim();
+      if (!str) return NaN;
+      const match = str.replace(',', '.').match(/-?\d+(\.\d+)?/);
+      return match ? parseFloat(match[0]) : NaN;
+    }
+
+    function extendBBox(bbox, coords) {
+      if (!coords) return;
+      if (typeof coords[0] === 'number') {
+        const lng = coords[0];
+        const lat = coords[1];
+        if (Number.isFinite(lng) && Number.isFinite(lat)) {
+          if (lng < bbox[0]) bbox[0] = lng;
+          if (lat < bbox[1]) bbox[1] = lat;
+          if (lng > bbox[2]) bbox[2] = lng;
+          if (lat > bbox[3]) bbox[3] = lat;
+        }
+        return;
+      }
+      for (const part of coords) extendBBox(bbox, part);
+    }
+
+    function deriveHeights(feature) {
+      const props = feature.properties || {};
+      const levelsVal = toNumber(props['building:levels']);
+      const hCandidates = [
+        props.height,
+        props['building:height'],
+        Number.isFinite(levelsVal) && levelsVal > 0 ? levelsVal * LEVEL_HEIGHT_METERS : NaN
+      ];
+      let height = hCandidates.map(toNumber).find((n) => Number.isFinite(n) && n > 0);
+      const minCandidates = [
+        props['min_height'],
+        props['building:min_height'],
+        props['building:levels:underground'] != null ? toNumber(props['building:levels:underground']) * LEVEL_HEIGHT_METERS : NaN
+      ];
+      let minHeight = minCandidates.map(toNumber).find((n) => Number.isFinite(n) && n >= 0);
+      if (!Number.isFinite(minHeight) || minHeight < 0) minHeight = 0;
+      if (!Number.isFinite(height) || height <= minHeight) {
+        const fallbackLevels = Number.isFinite(levelsVal) && levelsVal > 0 ? levelsVal : 3;
+        height = minHeight + Math.max(LEVEL_HEIGHT_METERS * fallbackLevels, 6);
+      }
+      props._height = height;
+      props._minHeight = minHeight;
+      props._color = pickColor(props);
+      feature.properties = props;
+    }
+
+    function pickColor(props = {}) {
+      const type = String(props['building'] || props['building:use'] || '').toLowerCase();
+      if (!type) return '#d4cbc3';
+      const palette = {
+        church: '#f0d492',
+        cathedral: '#f0d492',
+        commercial: '#d9b28c',
+        retail: '#d9b28c',
+        residential: '#d0d5db',
+        apartments: '#d0d5db',
+        office: '#c7d6e0',
+        public: '#d6c7e0',
+        industrial: '#c8c0b8'
+      };
+      return palette[type] || '#d4cbc3';
+    }
+
+    async function waitForMapLoad(map, timeoutMs = 12000) {
+      if (map.loaded()) return;
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('Map load timed out after ' + timeoutMs + 'ms')), timeoutMs);
+        map.once('load', () => { clearTimeout(timer); resolve(); });
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        // Test 1: MapLibre presence
+        if (!window.maplibregl) { showError('MapLibre GL (maplibregl) was not loaded.'); return; }
+        log('✔ MapLibre GL present', 'ok');
+
+        const start = {
+          center: [6.958281, 50.941278],
+          zoom: 16.8,
+          pitch: 55,
+          bearing: -17
+        };
+        const viewDefaults = { ...start };
+
+        const map = new maplibregl.Map({
+          container: 'map',
+          style: {
+            version: 8,
+            sources: {
+              osm: {
+                type: 'raster',
+                tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                tileSize: 256,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+              }
+            },
+            layers: [
+              { id: 'osm', type: 'raster', source: 'osm' }
+            ]
+          },
+          center: start.center,
+          zoom: start.zoom,
+          pitch: start.pitch,
+          bearing: start.bearing,
+          antialias: true
+        });
+        log('✔ Map instance created', 'ok');
+
+        map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+        map.addControl(new maplibregl.ScaleControl({ maxWidth: 120, unit: 'metric' }));
+
+        try {
+          await waitForMapLoad(map);
+          log('✔ Map style ready', 'ok');
+        } catch (loadErr) {
+          showError('Map style did not finish loading.', loadErr.message || loadErr);
+          return;
+        }
+
+        if (map.setFog) {
+          map.setFog({ color: '#dfe8f2', 'high-color': '#ffffff', 'horizon-blend': 0.2 });
+        }
+
+        const geojsonUrl = 'export.geojson';
+        let data;
+        try {
+          const resp = await fetch(geojsonUrl, { cache: 'no-store' });
+          if (!resp.ok) throw new Error('HTTP ' + resp.status);
+          data = await resp.json();
+          log('✔ GeoJSON fetched (' + (data.features?.length || 0) + ' features)', 'ok');
+        } catch (fetchErr) {
+          showError('Failed to load export.geojson.', fetchErr.message || fetchErr);
+          return;
+        }
+
+        if (!data || !Array.isArray(data.features) || !data.features.length) {
+          showError('export.geojson did not contain any features.');
+          return;
+        }
+
+        const validFeatures = [];
+        const bbox = [Infinity, Infinity, -Infinity, -Infinity];
+        for (const feature of data.features) {
+          if (!feature || feature.type !== 'Feature') continue;
+          const geomType = feature.geometry?.type;
+          if (!geomType || (geomType !== 'Polygon' && geomType !== 'MultiPolygon')) continue;
+          deriveHeights(feature);
+          if (feature.properties && Number.isFinite(feature.properties._height)) {
+            extendBBox(bbox, feature.geometry.coordinates);
+            validFeatures.push(feature);
+          }
+        }
+
+        log('✔ Features processed (' + validFeatures.length + ' usable)', 'ok');
+
+        const processed = { type: 'FeatureCollection', features: validFeatures };
+
+        if (!map.getSource('cologne-buildings')) {
+          map.addSource('cologne-buildings', {
+            type: 'geojson',
+            data: processed
+          });
+        } else {
+          map.getSource('cologne-buildings').setData(processed);
+        }
+
+        map.addLayer({
+          id: 'cologne-buildings-extrusion',
+          type: 'fill-extrusion',
+          source: 'cologne-buildings',
+          paint: {
+            'fill-extrusion-color': ['coalesce', ['get', '_color'], '#d4cbc3'],
+            'fill-extrusion-height': ['get', '_height'],
+            'fill-extrusion-base': ['coalesce', ['get', '_minHeight'], 0],
+            'fill-extrusion-opacity': 0.95
+          }
+        });
+
+        if (!map.getLayer('cologne-buildings-outline')) {
+          map.addLayer({
+            id: 'cologne-buildings-outline',
+            type: 'line',
+            source: 'cologne-buildings',
+            paint: {
+              'line-color': '#605d58',
+              'line-width': 0.5,
+              'line-opacity': 0.4
+            }
+          });
+        }
+
+        log('✔ 3D buildings rendered', 'ok');
+
+        if (bbox[0] !== Infinity && bbox[2] !== -Infinity) {
+          map.fitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]], {
+            padding: 60,
+            pitch: start.pitch,
+            bearing: start.bearing,
+            duration: 1400,
+            essential: true
+          });
+          map.once('moveend', () => {
+            const c = map.getCenter();
+            viewDefaults.center = [c.lng, c.lat];
+            viewDefaults.zoom = map.getZoom();
+            viewDefaults.pitch = map.getPitch();
+            viewDefaults.bearing = map.getBearing();
+            log('✔ Default view updated after fit', 'ok');
+          });
+          log('✔ View adjusted to GeoJSON extent', 'ok');
+        }
+
+        const btnCenter = document.getElementById('btn-center');
+        const btnTilt = document.getElementById('btn-tilt');
+        const btnFlat = document.getElementById('btn-flat');
+        const btnRotL = document.getElementById('btn-rotate-left');
+        const btnRotR = document.getElementById('btn-rotate-right');
+
+        btnCenter?.addEventListener('click', () => {
+          map.flyTo({
+            center: viewDefaults.center,
+            zoom: viewDefaults.zoom,
+            pitch: viewDefaults.pitch,
+            bearing: viewDefaults.bearing,
+            duration: 1200,
+            essential: true,
+            easing: (t) => t
+          });
+        });
+        btnTilt?.addEventListener('click', () => {
+          map.easeTo({ pitch: 55, duration: 800 });
+        });
+        btnFlat?.addEventListener('click', () => {
+          map.easeTo({ pitch: 0, duration: 800 });
+        });
+        btnRotL?.addEventListener('click', () => {
+          map.rotateTo(map.getBearing() - 20, { duration: 600 });
+        });
+        btnRotR?.addEventListener('click', () => {
+          map.rotateTo(map.getBearing() + 20, { duration: 600 });
+        });
+        log('✔ UI controls wired', 'ok');
+
+        map.on('error', (e) => {
+          if (e?.error) log('⚠ Map error: ' + e.error.message, 'warn');
+        });
+      } catch (err) {
+        showError('Unexpected runtime error.', (err && (err.stack || err.message)) ? (err.stack || err.message) : String(err));
+      }
+    });
+  </script>
+</body>
+</html>
