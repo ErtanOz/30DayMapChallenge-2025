@@ -4,6 +4,12 @@ A modern, highly interactive web map visualization of bicycle lanes in Cologne, 
 
 ![Cologne Bicycle Map](https://img.shields.io/badge/Status-Enhanced-brightgreen) ![License](https://img.shields.io/badge/License-MIT-blue) ![GitHub Pages](https://img.shields.io/badge/Deploy-GitHub%20Pages-orange) ![Interactive](https://img.shields.io/badge/Features-Advanced-ff6b35)
 
+https://ertanoz.github.io/30DayMapChallenge-2025/Day_2_lines/index.html
+
+
+<img width="1365" height="910" alt="image" src="https://github.com/user-attachments/assets/53b84627-2f0f-4458-92df-dd3d4ca5d4d1" />
+
+
 ## ✨ Enhanced Features
 
 ### 🎨 Modern UI/UX
@@ -375,5 +381,6 @@ To update bicycle lane data with enhanced features:
 ---
 
 **Enhanced with ❤️ for sustainable urban mobility and data visualization in Cologne**
+
 
 *Enhanced with advanced CARTO basemaps and interactive bicycle lane features - November 2025*
