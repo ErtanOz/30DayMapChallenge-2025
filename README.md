@@ -6,7 +6,7 @@
 | 4 | Data Challenge | Kölner Museen Virtuell | https://ion.cesium.com/stories/viewer/?id=aeb5bfef-187d-41f6-b465-3e53b5f33f54|
 | 5 | Earth | | |
 | 6 | Dimensions | 3D Cologne CityMap |https://690d13938529e73f66cec26d--sprightly-flan-78c1e0.netlify.app/leaflet_3_d_buildings_cologne_html.html |
-| 7 | Accessibility | | |
+| 7 | Accessibility | Cologne Public Transport Network| https://ertanoz.github.io/30DayMapChallenge-2025/Day_7_Accessibility/maps/day07_cologne.html|
 | 8 | Urban | | |
 | 9 | Analog | | |
 | 10 | Air | | |
