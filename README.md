@@ -1,3 +1,8 @@
+<img width="960" height="540" alt="image" src="https://github.com/user-attachments/assets/50095c82-b8e2-4ec8-a2b5-7194bdda22e0" />
+
+
+
+
 | # | Theme | Project | Link to Map|
 |---|---|---|---|
 | 1 | Points |Cologne’s monuments | https://ertanoz.github.io/30DayMapChallenge-2025/Day%201:%20Points/cologne-3d-monuments.html |
