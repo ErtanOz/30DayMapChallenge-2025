@@ -5,6 +5,8 @@ This folder contains my **Day 7 – Accessibility** contribution for the **#30Da
 The idea: show how **accessible public transport in Cologne** is at a glance – using an interactive **“spider web” network map** of stops and their connections.  
 Each click reveals how your chosen stop is connected to nearby stations and how dense / reachable the network around you is.
 
+<img width="1914" height="864" alt="image" src="https://github.com/user-attachments/assets/c3641897-bc62-4e01-a3c9-3497a7ea14f7" />
+
 ---
 
 ## 🌐 What this map shows
