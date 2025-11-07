@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 7: Network - Cologne Public Transport Spider Map</title>
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Modern Color Palette */
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #a5b4fc;
+            --secondary: #ec4899;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            
+            /* Glass morphism */
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            
+            /* Animations */
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+            color: var(--gray-800);
+            overflow: hidden;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            filter: saturate(1.1) contrast(1.05);
+        }
+
+        /* Modern Glass Morphism Cards */
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: var(--glass-shadow);
+            transition: all var(--transition-normal);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
+        }
+
+        .header {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            padding: 28px;
+            z-index: 1;
+            max-width: 380px;
+            animation: slideInLeft 0.6s ease-out;
+        }
+
+        .header h1 {
+            margin: 0 0 16px 0;
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .day-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .header p {
+            margin: 8px 0;
+            font-size: 15px;
+            color: var(--gray-600);
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        .header p strong {
+            color: var(--gray-800);
+            font-weight: 600;
+        }
+
+        .stats {
+            position: absolute;
+            bottom: 24px;
+            left: 24px;
+            padding: 24px;
+            z-index: 1;
+            min-width: 280px;
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 12px 0;
+            padding: 8px 0;
+        }
+
+        .stats-label {
+            color: var(--gray-600);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .stats-value {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 18px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .legend {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            padding: 24px;
+            z-index: 1;
+            max-width: 320px;
+            animation: slideInRight 0.6s ease-out;
+        }
+
+        .legend h3 {
+            margin: 0 0 20px 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gray-800);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 12px 0;
+            padding: 8px 0;
+            transition: all var(--transition-fast);
+        }
+
+        .legend-item:hover {
+            transform: translateX(4px);
+        }
+
+        .legend-color {
+            width: 40px;
+            height: 4px;
+            margin-right: 16px;
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .legend-color::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        .legend-label {
+            color: var(--gray-700);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 24px;
+            right: 24px;
+            padding: 24px;
+            z-index: 1;
+            min-width: 300px;
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        .control-group {
+            margin: 16px 0;
+        }
+
+        .control-label {
+            font-size: 13px;
+            color: var(--gray-600);
+            margin-bottom: 8px;
+            display: block;
+            font-weight: 500;
+        }
+
+        .range-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--gray-200);
+            outline: none;
+            -webkit-appearance: none;
+            transition: all var(--transition-fast);
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+            transition: all var(--transition-fast);
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.5);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+        }
+
+        .control-value {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 14px;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 16px;
+            width: 100%;
+            transition: all var(--transition-normal);
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* Weather Widget */
+        .weather {
+            position: absolute;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 20px 24px;
+            z-index: 1;
+            min-width: 200px;
+            text-align: center;
+            animation: slideInDown 0.6s ease-out;
+        }
+
+        .weather-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .weather-temp {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 4px;
+        }
+
+        .weather-desc {
+            font-size: 14px;
+            color: var(--gray-600);
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+
+        .weather-location {
+            font-size: 12px;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
+
+        /* Data source link */
+        .data-source {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 11px;
+            color: var(--gray-500);
+        }
+
+        .data-source a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color var(--transition-fast);
+        }
+
+        .data-source a:hover {
+            color: var(--secondary);
+        }
+
+        /* Animations */
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+
+        @keyframes slideInDown {
+            from {
+                transform: translateX(-50%) translateY(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Pulse animation for active elements */
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+            }
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+
+            /* Map adjustments for mobile */
+            #map {
+                filter: saturate(1.05) contrast(1.02);
+            }
+
+            /* Stack all cards vertically for mobile */
+            .header, .weather, .legend, .controls, .stats {
+                position: relative;
+                margin: 8px;
+                max-width: none;
+                width: calc(100% - 16px);
+                padding: 16px;
+                left: auto !important;
+                right: auto !important;
+                top: auto !important;
+                bottom: auto !important;
+                transform: none !important;
+            }
+
+            /* Header adjustments */
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .day-badge {
+                font-size: 11px;
+                padding: 6px 12px;
+            }
+
+            /* Weather widget mobile */
+            .weather {
+                text-align: center;
+                margin: 8px auto;
+            }
+
+            .weather-icon {
+                font-size: 36px;
+            }
+
+            .weather-temp {
+                font-size: 28px;
+            }
+
+            .weather-desc {
+                font-size: 15px;
+            }
+
+            .weather-location {
+                font-size: 13px;
+            }
+
+            /* Legend mobile adjustments */
+            .legend {
+                margin: 8px auto;
+            }
+
+            .legend h3 {
+                font-size: 15px;
+                text-align: center;
+            }
+
+            .legend-item {
+                margin: 8px 0;
+                padding: 6px 0;
+            }
+
+            .legend-color {
+                width: 50px;
+                height: 5px;
+            }
+
+            /* Controls mobile optimization */
+            .controls {
+                margin: 8px auto;
+            }
+
+            .control-group {
+                margin: 12px 0;
+            }
+
+            .control-label {
+                font-size: 14px;
+                margin-bottom: 10px;
+            }
+
+            input[type="range"] {
+                height: 8px;
+                -webkit-appearance: none;
+                appearance: none;
+            }
+
+            input[type="range"]::-webkit-slider-thumb {
+                width: 24px;
+                height: 24px;
+            }
+
+            input[type="range"]::-moz-range-thumb {
+                width: 24px;
+                height: 24px;
+            }
+
+            .control-value {
+                font-size: 15px;
+                min-width: 60px;
+            }
+
+            .btn-primary {
+                padding: 14px 20px;
+                font-size: 15px;
+                margin-top: 12px;
+            }
+
+            /* Stats mobile */
+            .stats {
+                margin: 8px auto;
+            }
+
+            .stats-row {
+                margin: 8px 0;
+                padding: 6px 0;
+            }
+
+            .stats-label {
+                font-size: 15px;
+            }
+
+            .stats-value {
+                font-size: 20px;
+            }
+
+            /* Disable hover effects on touch devices */
+            .card:hover {
+                transform: none;
+            }
+
+            .legend-item:hover {
+                transform: none;
+            }
+
+            .btn-primary:hover {
+                transform: none;
+            }
+        }
+
+        /* Small mobile devices (phones) */
+        @media (max-width: 480px) {
+            .header, .weather, .legend, .controls, .stats {
+                margin: 6px;
+                padding: 12px;
+                width: calc(100% - 12px);
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .weather-icon {
+                font-size: 32px;
+            }
+
+            .weather-temp {
+                font-size: 24px;
+            }
+
+            .weather-desc {
+                font-size: 14px;
+            }
+
+            /* Make cards more compact on very small screens */
+            .card {
+                border-radius: 12px;
+            }
+
+            .btn-primary {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+        }
+
+        /* Tablet optimizations */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .header, .weather, .legend, .controls, .stats {
+                max-width: 320px;
+            }
+
+            .header {
+                top: 20px;
+                left: 20px;
+            }
+
+            .weather {
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .legend {
+                top: 20px;
+                right: 20px;
+            }
+
+            .controls {
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .stats {
+                bottom: 20px;
+                left: 20px;
+            }
+        }
+
+        /* Touch-friendly interactions */
+        @media (hover: none) and (pointer: coarse) {
+            /* Larger touch targets */
+            input[type="range"]::-webkit-slider-thumb {
+                width: 28px;
+                height: 28px;
+            }
+
+            input[type="range"]::-moz-range-thumb {
+                width: 28px;
+                height: 28px;
+            }
+
+            .btn-primary {
+                min-height: 48px;
+                padding: 16px 24px;
+            }
+
+            /* Disable subtle animations on mobile for performance */
+            .card {
+                transition: none;
+            }
+
+            .legend-item {
+                transition: none;
+            }
+
+            .legend-color::after {
+                animation: none;
+            }
+        }
+
+        /* Modern scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--gray-100);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary) 100%);
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <div class="header card">
+        <div class="day-badge">
+            <span>Day 7</span>
+            <span>•</span>
+            <span>Network</span>
+        </div>
+        <h1>Cologne Public Transport Network</h1>
+        <p>Interactive spider web visualization showing connections between <strong id="stationCount">-</strong> public transport stations across Cologne</p>
+        <p style="font-size: 13px; color: var(--gray-500); margin-top: 12px;">
+            🖱️ Move your cursor across the map to discover station connections in real-time
+        </p>
+        <div class="data-source">
+            <strong>Data Source:</strong><br>
+            <a href="https://www.openstreetmap.org/" target="_blank">
+                OpenStreetMap Contributors
+            </a>
+        </div>
+    </div>
+
+    <div class="weather card">
+        <div class="weather-icon" id="weatherIcon">🌤️</div>
+        <div class="weather-temp" id="weatherTemp">--°C</div>
+        <div class="weather-desc" id="weatherDesc">Loading...</div>
+        <div class="weather-location">Cologne, Germany</div>
+    </div>
+
+    <div class="stats card">
+        <div class="stats-row">
+            <span class="stats-label">Active Connections</span>
+            <span class="stats-value" id="connectionCount">0</span>
+        </div>
+        <div class="stats-row">
+            <span class="stats-label">Nearest Station</span>
+            <span class="stats-value" id="nearestDistance">-</span>
+        </div>
+    </div>
+
+    <div class="legend card">
+        <h3>Connection Distance</h3>
+        
+        <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);"></div>
+            <span class="legend-label">0 - 500m</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);"></div>
+            <span class="legend-label">500m - 1km</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);"></div>
+            <span class="legend-label">1 - 2km</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);"></div>
+            <span class="legend-label">2 - 3km</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(135deg, #7c2d12 0%, #92400e 100%);"></div>
+            <span class="legend-label">3km+</span>
+        </div>
+    </div>
+
+    <div class="controls card">
+        <div class="control-group">
+            <label class="control-label">Maximum Connection Distance</label>
+            <div class="range-container">
+                <input type="range" id="maxDistance" min="500" max="5000" step="100" value="3000">
+                <span class="control-value" id="maxDistanceValue">3.0km</span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">Maximum Connections</label>
+            <div class="range-container">
+                <input type="range" id="maxConnections" min="10" max="200" step="10" value="50">
+                <span class="control-value" id="maxConnectionsValue">50</span>
+            </div>
+        </div>
+        <button class="btn-primary" id="toggleAnimation">Pause Animation</button>
+    </div>
+
+    <script>
+        // Mobile detection
+        function isMobile() {
+            return window.innerWidth <= 768 || 'ontouchstart' in window;
+        }
+
+        // Initialize map with modern light theme
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: {
+                version: 8,
+                sources: {
+                    'carto-light': {
+                        type: 'raster',
+                        tiles: ['https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'],
+                        tileSize: 256,
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                    }
+                },
+                layers: [{
+                    id: 'carto-light-layer',
+                    type: 'raster',
+                    source: 'carto-light',
+                    minzoom: 0,
+                    maxzoom: 22
+                }]
+            },
+            center: [6.9603, 50.9375], // Cologne coordinates
+            zoom: 11,
+            pitch: 0
+        });
+
+        let stations = [];
+        let mousePosition = null;
+        let animationEnabled = true;
+        let maxDistance = 3000;
+        let maxConnections = 50;
+
+        // Mobile performance optimization
+        let updateThrottle = 16; // Default 60fps
+        if (isMobile()) {
+            updateThrottle = 50; // Mobile: 20fps for better performance
+        }
+
+        // Weather API functions
+        function getWeatherIcon(condition) {
+            const conditionMap = {
+                'clear': '☀️',
+                'sunny': '☀️',
+                'partly cloudy': '⛅',
+                'cloudy': '☁️',
+                'overcast': '☁️',
+                'mist': '🌫️',
+                'fog': '🌫️',
+                'rain': '🌧️',
+                'drizzle': '🌦️',
+                'showers': '🌧️',
+                'thunderstorm': '⛈️',
+                'snow': '❄️',
+                'sleet': '🌨️',
+                'windy': '💨'
+            };
+            
+            for (const [key, icon] of Object.entries(conditionMap)) {
+                if (condition.toLowerCase().includes(key)) {
+                    return icon;
+                }
+            }
+            return '🌤️'; // default
+        }
+
+        function fetchWeather() {
+            // Using a free weather API - Open-Meteo (no API key required)
+            const lat = 50.9375; // Cologne coordinates
+            const lon = 6.9603;
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&timezone=Europe%2FBerlin`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.current) {
+                        const temp = Math.round(data.current.temperature_2m);
+                        const weatherCode = data.current.weather_code;
+                        
+                        // Convert weather code to description
+                        let description = 'Clear';
+                        if (weatherCode === 0) description = 'Clear sky';
+                        else if (weatherCode === 1) description = 'Mainly clear';
+                        else if (weatherCode === 2) description = 'Partly cloudy';
+                        else if (weatherCode === 3) description = 'Overcast';
+                        else if (weatherCode === 45 || weatherCode === 48) description = 'Fog';
+                        else if (weatherCode >= 51 && weatherCode <= 57) description = 'Drizzle';
+                        else if (weatherCode >= 61 && weatherCode <= 67) description = 'Rain';
+                        else if (weatherCode >= 71 && weatherCode <= 77) description = 'Snow';
+                        else if (weatherCode >= 80 && weatherCode <= 82) description = 'Rain showers';
+                        else if (weatherCode >= 85 && weatherCode <= 86) description = 'Snow showers';
+                        else if (weatherCode >= 95) description = 'Thunderstorm';
+                        
+                        document.getElementById('weatherTemp').textContent = `${temp}°C`;
+                        document.getElementById('weatherDesc').textContent = description;
+                        document.getElementById('weatherIcon').textContent = getWeatherIcon(description);
+                    }
+                })
+                .catch(error => {
+                    console.error('Weather fetch error:', error);
+                    // Fallback weather data
+                    document.getElementById('weatherTemp').textContent = '12°C';
+                    document.getElementById('weatherDesc').textContent = 'Partly cloudy';
+                    document.getElementById('weatherIcon').textContent = '⛅';
+                });
+        }
+
+        // Load stations data
+        fetch('../data/cologneBusUbahnStations.geojson')
+            .then(response => response.json())
+            .then(data => {
+                // Filter only Point geometries and convert to a proper format
+                stations = data.features.filter(feature => 
+                    feature.geometry && feature.geometry.type === 'Point'
+                ).map(feature => {
+                    return {
+                        geometry: {
+                            type: 'Point',
+                            coordinates: feature.geometry.coordinates
+                        },
+                        properties: {
+                            id: feature.properties['@id'] || Math.random().toString(36),
+                            name: feature.properties.name || 'Unknown Station',
+                            amenity: feature.properties.amenity || '',
+                            network: feature.properties.network || '',
+                            operator: feature.properties.operator || '',
+                            public_transport: feature.properties.public_transport || ''
+                        }
+                    };
+                });
+                
+                console.log(`Loaded ${stations.length} stations`);
+                document.getElementById('stationCount').textContent = stations.length.toLocaleString();
+                
+                map.on('load', () => {
+                    // Add stations as circles with modern styling
+                    map.addSource('stations', {
+                        type: 'geojson',
+                        data: {
+                            type: 'FeatureCollection',
+                            features: stations
+                        }
+                    });
+
+                    // Modern station styling optimized for light theme
+                    map.addLayer({
+                        id: 'stations-layer',
+                        type: 'circle',
+                        source: 'stations',
+                        paint: {
+                            'circle-radius': [
+                                'interpolate',
+                                ['linear'],
+                                ['zoom'],
+                                10, 4,
+                                15, 7,
+                                20, 10
+                            ],
+                            'circle-color': [
+                                'case',
+                                ['==', ['get', 'amenity'], 'bus_station'], '#4f46e5',
+                                ['==', ['get', 'public_transport'], 'station'], '#dc2626',
+                                '#0891b2'
+                            ],
+                            'circle-opacity': 0.9,
+                            'circle-stroke-width': 3,
+                            'circle-stroke-color': '#ffffff',
+                            'circle-stroke-opacity': 1
+                        }
+                    });
+
+                    // Add empty line source for spider connections
+                    map.addSource('spider-lines', {
+                        type: 'geojson',
+                        data: {
+                            type: 'FeatureCollection',
+                            features: []
+                        }
+                    });
+
+                    map.addLayer({
+                        id: 'spider-lines-layer',
+                        type: 'line',
+                        source: 'spider-lines',
+                        paint: {
+                            'line-width': ['get', 'width'],
+                            'line-color': ['get', 'color'],
+                            'line-opacity': ['get', 'opacity']
+                        }
+                    });
+
+                    // Add highlight point for mouse position
+                    map.addSource('mouse-point', {
+                        type: 'geojson',
+                        data: {
+                            type: 'FeatureCollection',
+                            features: []
+                        }
+                    });
+
+                    map.addLayer({
+                        id: 'mouse-point-layer',
+                        type: 'circle',
+                        source: 'mouse-point',
+                        paint: {
+                            'circle-radius': 15,
+                            'circle-color': [
+                                'interpolate',
+                                ['linear'],
+                                ['get', 'connections'],
+                                0, '#6366f1',
+                                25, '#f59e0b',
+                                50, '#ef4444',
+                                100, '#ec4899'
+                            ],
+                            'circle-opacity': 0.9,
+                            'circle-stroke-width': 4,
+                            'circle-stroke-color': '#ffffff',
+                            'circle-stroke-opacity': 1
+                        }
+                    });
+                });
+            });
+
+        // Calculate distance between two points (Haversine formula)
+        function calculateDistance(lon1, lat1, lon2, lat2) {
+            const R = 6371e3; // Earth's radius in meters
+            const φ1 = lat1 * Math.PI / 180;
+            const φ2 = lat2 * Math.PI / 180;
+            const Δφ = (lat2 - lat1) * Math.PI / 180;
+            const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                    Math.cos(φ1) * Math.cos(φ2) *
+                    Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+            return R * c;
+        }
+
+        // Modern color palette for distance-based connections
+        function getColorForDistance(distance) {
+            if (distance < 500) return { 
+                color: '#10b981', 
+                opacity: 0.9, 
+                width: 3.0 
+            };
+            if (distance < 1000) return { 
+                color: '#f59e0b', 
+                opacity: 0.8, 
+                width: 2.5 
+            };
+            if (distance < 2000) return { 
+                color: '#f97316', 
+                opacity: 0.7, 
+                width: 2.0 
+            };
+            if (distance < 3000) return { 
+                color: '#ef4444', 
+                opacity: 0.6, 
+                width: 1.5 
+            };
+            return { 
+                color: '#7c2d12', 
+                opacity: 0.4, 
+                width: 1.0 
+            };
+        }
+
+        // Update spider connections
+        function updateSpider(lngLat) {
+            if (!map.getSource('spider-lines') || stations.length === 0) return;
+
+            const mouseLon = lngLat.lng;
+            const mouseLat = lngLat.lat;
+
+            // Calculate distances to all stations
+            const stationsWithDistance = stations.map(station => {
+                const [lon, lat] = station.geometry.coordinates;
+                const distance = calculateDistance(mouseLon, mouseLat, lon, lat);
+                return { station, distance };
+            });
+
+            // Sort by distance and take closest ones within maxDistance
+            const nearestStations = stationsWithDistance
+                .filter(item => item.distance <= maxDistance)
+                .sort((a, b) => a.distance - b.distance)
+                .slice(0, maxConnections);
+
+            // Update stats with modern styling
+            const connectionCount = document.getElementById('connectionCount');
+            connectionCount.textContent = nearestStations.length;
+            
+            if (nearestStations.length > 0) {
+                const nearest = nearestStations[0].distance;
+                const distanceText = nearest < 1000 ? `${Math.round(nearest)}m` : `${(nearest/1000).toFixed(1)}km`;
+                document.getElementById('nearestDistance').textContent = distanceText;
+            } else {
+                document.getElementById('nearestDistance').textContent = '-';
+            }
+
+            // Create line features with enhanced styling
+            const lineFeatures = nearestStations.map(item => {
+                const [lon, lat] = item.station.geometry.coordinates;
+                const style = getColorForDistance(item.distance);
+                
+                return {
+                    type: 'Feature',
+                    properties: {
+                        distance: item.distance,
+                        station_id: item.station.properties.id,
+                        station_name: item.station.properties.name,
+                        color: style.color,
+                        opacity: style.opacity,
+                        width: style.width
+                    },
+                    geometry: {
+                        type: 'LineString',
+                        coordinates: [
+                            [mouseLon, mouseLat],
+                            [lon, lat]
+                        ]
+                    }
+                };
+            });
+
+            map.getSource('spider-lines').setData({
+                type: 'FeatureCollection',
+                features: lineFeatures
+            });
+
+            // Update mouse point with connection count
+            map.getSource('mouse-point').setData({
+                type: 'FeatureCollection',
+                features: [{
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [mouseLon, mouseLat]
+                    },
+                    properties: {
+                        connections: nearestStations.length
+                    }
+                }]
+            });
+        }
+
+        // Mouse move handler with debouncing for performance
+        let lastUpdate = 0;
+
+        map.on('mousemove', (e) => {
+            const now = Date.now();
+            if (animationEnabled && now - lastUpdate > updateThrottle) {
+                mousePosition = e.lngLat;
+                updateSpider(e.lngLat);
+                lastUpdate = now;
+            }
+        });
+
+        // Mobile touch support
+        if (isMobile()) {
+            // Add touch event handlers for mobile interaction
+            let touchStartTime = 0;
+            let touchStartPos = { x: 0, y: 0 };
+            
+            map.getCanvas().addEventListener('touchstart', (e) => {
+                touchStartTime = Date.now();
+                touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }, { passive: true });
+            
+            map.getCanvas().addEventListener('touchend', (e) => {
+                const touchEndTime = Date.now();
+                const touchDuration = touchEndTime - touchStartTime;
+                
+                // Treat quick taps as clicks
+                if (touchDuration < 300) {
+                    const touchEndPos = { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+                    const distance = Math.sqrt(
+                        Math.pow(touchEndPos.x - touchStartPos.x, 2) + 
+                        Math.pow(touchEndPos.y - touchStartPos.y, 2)
+                    );
+                    
+                    // If it's a tap (not a drag), trigger spider update
+                    if (distance < 10) {
+                        const rect = map.getCanvas().getBoundingClientRect();
+                        const x = touchEndPos.x - rect.left;
+                        const y = touchEndPos.y - rect.top;
+                        
+                        const lngLat = map.unproject([x, y]);
+                        if (animationEnabled) {
+                            updateSpider(lngLat);
+                        }
+                    }
+                }
+            }, { passive: true });
+            
+            // Optimize range sliders for touch
+            const rangeInputs = document.querySelectorAll('input[type="range"]');
+            rangeInputs.forEach(input => {
+                input.addEventListener('touchstart', (e) => {
+                    e.stopPropagation();
+                }, { passive: true });
+                
+                input.addEventListener('touchmove', (e) => {
+                    e.stopPropagation();
+                }, { passive: true });
+            });
+        }
+
+        // Mouse leave handler
+        map.on('mouseleave', () => {
+            if (map.getSource('spider-lines')) {
+                map.getSource('spider-lines').setData({
+                    type: 'FeatureCollection',
+                    features: []
+                });
+            }
+            if (map.getSource('mouse-point')) {
+                map.getSource('mouse-point').setData({
+                    type: 'FeatureCollection',
+                    features: []
+                });
+            }
+            document.getElementById('connectionCount').textContent = '0';
+            document.getElementById('nearestDistance').textContent = '-';
+        });
+
+        // Modernized controls
+        document.getElementById('maxDistance').addEventListener('input', (e) => {
+            maxDistance = parseInt(e.target.value);
+            const km = (maxDistance / 1000).toFixed(1);
+            document.getElementById('maxDistanceValue').textContent = `${km}km`;
+            if (mousePosition && animationEnabled) {
+                updateSpider(mousePosition);
+            }
+        });
+
+        document.getElementById('maxConnections').addEventListener('input', (e) => {
+            maxConnections = parseInt(e.target.value);
+            document.getElementById('maxConnectionsValue').textContent = maxConnections;
+            if (mousePosition && animationEnabled) {
+                updateSpider(mousePosition);
+            }
+        });
+
+        document.getElementById('toggleAnimation').addEventListener('click', () => {
+            animationEnabled = !animationEnabled;
+            const btn = document.getElementById('toggleAnimation');
+            btn.textContent = animationEnabled ? 'Pause Animation' : 'Resume Animation';
+            
+            if (!animationEnabled) {
+                map.getSource('spider-lines').setData({
+                    type: 'FeatureCollection',
+                    features: []
+                });
+                map.getSource('mouse-point').setData({
+                    type: 'FeatureCollection',
+                    features: []
+                });
+            } else if (mousePosition) {
+                updateSpider(mousePosition);
+            }
+        });
+
+        // Enhanced popup styling
+        map.on('click', 'stations-layer', (e) => {
+            const feature = e.features[0];
+            const coords = feature.geometry.coordinates.slice();
+            const stationName = feature.properties.name;
+            const amenity = feature.properties.amenity;
+            const network = feature.properties.network;
+            const operator = feature.properties.operator;
+            
+            let html = `
+                <div style="
+                    min-width: 220px; 
+                    font-family: 'Inter', sans-serif;
+                    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
+                    padding: 20px;
+                    border-radius: 12px;
+                    border: 1px solid rgba(99, 102, 241, 0.2);
+                ">
+                    <h4 style="
+                        margin: 0 0 12px 0; 
+                        color: #1e293b; 
+                        font-weight: 600;
+                        font-size: 16px;
+                    ">${stationName || 'Unknown Station'}</h4>
+                    <div style="font-size: 14px; color: #64748b; line-height: 1.5;">
+            `;
+            
+            if (amenity) {
+                html += `<div style="margin: 4px 0;"><strong>Type:</strong> ${amenity}</div>`;
+            }
+            if (network) {
+                html += `<div style="margin: 4px 0;"><strong>Network:</strong> ${network}</div>`;
+            }
+            if (operator) {
+                html += `<div style="margin: 4px 0;"><strong>Operator:</strong> ${operator}</div>`;
+            }
+            
+            html += `
+                        <div style="margin: 8px 0 0 0; padding-top: 8px; border-top: 1px solid rgba(99, 102, 241, 0.2); font-size: 12px; color: #94a3b8;">
+                            <strong>Coordinates:</strong><br>
+                            ${coords[1].toFixed(6)}, ${coords[0].toFixed(6)}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            new maplibregl.Popup({
+                closeButton: true,
+                closeOnClick: true,
+                maxWidth: '300px'
+            })
+                .setLngLat(coords)
+                .setHTML(html)
+                .addTo(map);
+        });
+
+        // Change cursor on hover with smooth transition
+        map.on('mouseenter', 'stations-layer', () => {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+
+        map.on('mouseleave', 'stations-layer', () => {
+            map.getCanvas().style.cursor = '';
+        });
+
+        // Handle orientation change for mobile
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                map.resize();
+                // Refresh spider connections after orientation change
+                if (mousePosition && animationEnabled) {
+                    updateSpider(mousePosition);
+                }
+            }, 100);
+        });
+
+        // Prevent zoom on double tap for better mobile experience
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (event) => {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
+        // Initialize weather
+        fetchWeather();
+    </script>
+</body>
+</html>
