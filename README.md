@@ -12,7 +12,7 @@
 | 5 | Earth | | |
 | 6 | Dimensions | 3D Cologne CityMap |https://690d13938529e73f66cec26d--sprightly-flan-78c1e0.netlify.app/leaflet_3_d_buildings_cologne_html.html |
 | 7 | Accessibility | Cologne Public Transport Network| https://ertanoz.github.io/30DayMapChallenge-2025/Day_7_Accessibility/maps/day07_cologne.html|
-| 8 | Urban | | |
+| 8 | Urban | Cologne_building_age_map |https://ertanoz.github.io/30DayMapChallenge-2025/Day_8_Urban/Day_8_Urban_cologne_building_age_map.html |
 | 9 | Analog | | |
 | 10 | Air | | |
 | 11 | Minimal | | |
