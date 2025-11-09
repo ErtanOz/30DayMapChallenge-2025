@@ -1,5 +1,5 @@
+<img width="1915" height="1025" alt="image" src="https://github.com/user-attachments/assets/62078c7a-9cd8-4ae7-a9ef-86a58357cd0f" />
 
-<img width="1918" height="1016" alt="image" src="https://github.com/user-attachments/assets/58e1d6bc-e8c0-4485-8c3b-ac5d7fd29cb9" />
 
 # Day 8 – Urban: Cologne Synthetic Building‑Age Map
 
