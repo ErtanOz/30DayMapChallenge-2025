@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cologne — Synthetic Building Age Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    html, body { height: 100%; margin: 0; background:#000; }
+    #map { position: absolute; inset: 0; }
+    .panel {
+      position: absolute; left: 12px; top: 12px; z-index: 1000;
+      background: rgba(15, 15, 18, 0.96); color: #eee; border-radius: 14px;
+      padding: 14px; max-width: 420px; box-shadow: 0 10px 30px rgba(0,0,0,.55);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    .panel h1 { font-size: 18px; margin: 0 0 8px; letter-spacing: .4px; }
+    .row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-top:6px; }
+    .small { font-size: 12px; opacity: .9; }
+    .legend { display: grid; grid-template-columns: auto 1fr; gap: 8px; margin-top: 8px; }
+    .swatch { width: 16px; height: 12px; border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.35); }
+    .pill { display:inline-block; padding:3px 8px; border-radius:999px; background:#222; color:#eee; font-size:11px; }
+    .btn { cursor:pointer; border:0; border-radius:10px; padding:6px 9px; background:#202329; color:#eee; font-size:11px; }
+    .btn:hover { background:#32363f; }
+    .footer { position:absolute; left:12px; right:12px; bottom:10px; z-index:1000; display:flex; align-items:center; gap:10px; }
+    input[type="range"]{ width: 260px; }
+    .attribution { position:absolute; right:10px; bottom:10px; z-index:1000; font-size:10px; background:rgba(10,10,12,.92); color:#aaa; padding:5px 9px; border-radius:10px; }
+    .notice { font-size: 11px; margin-top: 6px; opacity:.9 }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div class="panel">
+    <h1>Building Age — Cologne</h1>
+    <div class="small">
+      Map style inspired by the sample poster: dark basemap, vivid footprints.
+      Real OSM building footprints; if no year is tagged, a <span class="pill">synthetic year</span>
+      is assigned per district:
+      Altstadt 1850–1950 · Ehrenfeld 1920–1980 · Chorweiler 1970–2000 · Mülheim 1930–2000 · sonst 1950–2020.
+    </div>
+
+    <div class="row" style="margin-top:10px;">
+      <label class="small" for="yearMax">Show buildings ≤</label>
+      <span class="pill" id="yearLabel">2025</span>
+    </div>
+    <input id="yearMax" type="range" min="1800" max="2025" value="2025" step="1" />
+
+    <div class="row">
+      <button id="loadOsm" class="btn">▶ Load OSM + Synthetic Ages</button>
+      <button id="toggleAuto" class="btn">Auto: Off</button>
+    </div>
+    <div class="row">
+      <button id="exportGeoJSON" class="btn">⬇ Export GeoJSON</button>
+      <button id="exportCSV" class="btn">⬇ Export CSV</button>
+    </div>
+    <div class="small" id="featureCount">0 buildings</div>
+
+    <div class="legend" id="legend"></div>
+    <div class="notice">
+      Export format: <code>id,year_built,synthetic,district,geometry</code> (WKT for CSV).
+      Network issues (Overpass) are handled gracefully; you may see fewer or no buildings if blocked.
+    </div>
+  </div>
+
+  <div class="footer">
+    <span class="small">Fill opacity</span>
+    <input id="opacity" type="range" min="20" max="100" value="90" />
+    <span class="small"><span id="opacityVal">90%</span></span>
+  </div>
+
+  <div class="attribution">© OpenStreetMap contributors • Leaflet • Synthetic age heuristic for demo only</div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // ----------------------------
+    // Map init (dark basemap like reference image)
+    // ----------------------------
+    const map = L.map('map', { zoomControl: true }).setView([50.94, 6.96], 14);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap, CARTO',
+      maxZoom: 19
+    }).addTo(map);
+
+    const cityBBox = { south: 50.86, west: 6.80, north: 51.07, east: 7.10 };
+
+    // ----------------------------
+    // Color scale (poster-like)
+    // ----------------------------
+    const classes = [
+      { max: 1850, color: '#3182bd', label: '<1850' },
+      { max: 1900, color: '#6baed6', label: '1850–1900' },
+      { max: 1930, color: '#9ecae1', label: '1900–1930' },
+      { max: 1950, color: '#f6e05e', label: '1930–1950' },
+      { max: 1970, color: '#f6ad55', label: '1950–1970' },
+      { max: 1990, color: '#ed8936', label: '1970–1990' },
+      { max: 2010, color: '#e53e3e', label: '1990–2010' },
+      { max: 2100, color: '#9b2c2c', label: '2010–today' }
+    ];
+
+    function colorForYear(y){
+      if(!y) return '#222';
+      for(const c of classes){ if(y <= c.max) return c.color; }
+      return classes[classes.length-1].color;
+    }
+
+    // Legend
+    const legendEl = document.getElementById('legend');
+    classes.forEach(c => {
+      const sw = document.createElement('div'); sw.className='swatch'; sw.style.background=c.color;
+      const lb = document.createElement('div'); lb.className='small'; lb.textContent=c.label;
+      legendEl.appendChild(sw); legendEl.appendChild(lb);
+    });
+    (function addLegendItems(){
+      const swU = document.createElement('div'); swU.className='swatch'; swU.style.background='#222';
+      const lbU = document.createElement('div'); lbU.className='small'; lbU.textContent='synthetic/unknown';
+      legendEl.appendChild(swU); legendEl.appendChild(lbU);
+    })();
+
+    // ----------------------------
+    // Layers & state
+    // ----------------------------
+    const buildingLayer = L.geoJSON([], {
+      style: f => ({
+        color: '#050505',
+        weight: 0.25,
+        fillColor: colorForYear(f.properties.year_built),
+        fillOpacity: currentOpacity/100
+      }),
+      onEachFeature: onEachBuilding
+    }).addTo(map);
+
+    let currentData = { type:'FeatureCollection', features:[] };
+    let autoReload = false;
+    let currentOpacity = 90;
+
+    const yearInput = document.getElementById('yearMax');
+    const yearLabel = document.getElementById('yearLabel');
+    const opacityInput = document.getElementById('opacity');
+    const opacityVal = document.getElementById('opacityVal');
+    const featureCountEl = document.getElementById('featureCount');
+
+    function onEachBuilding(feature, layer){
+      const p = feature.properties || {};
+      const src = p.synthetic ? 'synthetic ('+ (p.district || 'other') +')' : 'OSM tags';
+      const html = `ID: ${p.id || p.osm_id || ''}<br>`+
+                   `Year: <b>${p.year_built || 'n/a'}</b><br>`+
+                   `<span class="small">${src}</span>`;
+      layer.bindPopup(html);
+    }
+
+    function setLayerOpacity(v){
+      currentOpacity = v;
+      buildingLayer.setStyle({ fillOpacity: v/100 });
+    }
+
+    yearInput.addEventListener('input', () => {
+      const y = +yearInput.value; yearLabel.textContent = y;
+      applyYearFilter(y);
+    });
+
+    function applyYearFilter(limitYear){
+      buildingLayer.clearLayers();
+      const filtered = currentData.features.filter(f => {
+        const yr = f.properties.year_built;
+        return yr == null || yr <= limitYear; // keep unknown/synthetic visible, but bounded
+      });
+      buildingLayer.addData(filtered);
+      featureCountEl.textContent = `${filtered.length.toLocaleString()} buildings`;
+    }
+
+    opacityInput.addEventListener('input', () => {
+      const v = +opacityInput.value; opacityVal.textContent = v+'%'; setLayerOpacity(v); });
+
+    // ----------------------------
+    // Synthetic age helpers
+    // ----------------------------
+    function randInt(min, max){
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function guessDistrict(lat, lon){
+      // Very rough bboxes, just for synthetic demo
+      if(lat >= 50.931 && lat <= 50.947 && lon >= 6.94 && lon <= 6.97) return 'Altstadt';
+      if(lat >= 50.948 && lat <= 50.99 && lon >= 6.88 && lon <= 6.96) return 'Ehrenfeld';
+      if(lat >= 51.01 && lat <= 51.08 && lon >= 6.84 && lon <= 6.96) return 'Chorweiler';
+      if(lat >= 50.95 && lat <= 51.03 && lon >= 6.99 && lon <= 7.08) return 'Mülheim';
+      return 'Other';
+    }
+
+    function syntheticYearForDistrict(d){
+      switch(d){
+        case 'Altstadt': return randInt(1850,1950);
+        case 'Ehrenfeld': return randInt(1920,1980);
+        case 'Chorweiler': return randInt(1970,2000);
+        case 'Mülheim': return randInt(1930,2000);
+        default: return randInt(1950,2020);
+      }
+    }
+
+    function parseTaggedYear(tags){
+      if(!tags) return null;
+      const keys = ['building:year_built','year_built','construction:year','start_date','opening_date','build_date','date'];
+      let best = null;
+      for(const k of keys){
+        const v = tags[k];
+        if(!v) continue;
+        const matches = String(v).match(/(16|17|18|19|20)\d{2}/g);
+        if(!matches) continue;
+        for(const m of matches){
+          const yr = +m;
+          if(yr >= 1600 && yr <= 2100 && (best === null || yr < best)) best = yr;
+        }
+      }
+      return best;
+    }
+
+    function centroidOfWayGeom(geom){
+      if(!geom || !Array.isArray(geom)) return null;
+      let x=0,y=0,n=0;
+      for(const pt of geom){ x+=pt.lon; y+=pt.lat; n++; }
+      if(!n) return null;
+      return { lon:x/n, lat:y/n };
+    }
+
+    // ----------------------------
+    // Overpass -> GeoJSON with synthetic ages
+    // ----------------------------
+    function overpassToGeoJSONWithAges(data){
+      const fc = { type:'FeatureCollection', features:[] };
+      if(!data || !Array.isArray(data.elements)) return fc;
+      for(const el of data.elements){
+        if(el.type !== 'way' || !el.tags || !el.tags.building || !Array.isArray(el.geometry)) continue;
+        const coords = el.geometry.map(p => [p.lon, p.lat]);
+        if(coords.length < 3) continue;
+        const first = coords[0];
+        const last = coords[coords.length-1];
+        if(first[0] !== last[0] || first[1] !== last[1]) coords.push([first[0], first[1]]);
+        const centroid = centroidOfWayGeom(el.geometry) || {lon:first[0],lat:first[1]};
+        const tagged = parseTaggedYear(el.tags);
+        const district = guessDistrict(centroid.lat, centroid.lon);
+        const synthetic = tagged == null;
+        const year = synthetic ? syntheticYearForDistrict(district) : tagged;
+        fc.features.push({
+          type:'Feature',
+          properties:{
+            id: el.id,
+            osm_id: el.id,
+            year_built: year,
+            synthetic: synthetic,
+            district: district,
+            tags: el.tags
+          },
+          geometry:{ type:'Polygon', coordinates:[coords] }
+        });
+      }
+      return fc;
+    }
+
+    async function loadOsmSynthetic(bbox){
+      const q = bbox || map.getBounds();
+      const south = q.getSouth ? q.getSouth() : q.south;
+      const west  = q.getWest  ? q.getWest()  : q.west;
+      const north = q.getNorth ? q.getNorth() : q.north;
+      const east  = q.getEast  ? q.getEast()  : q.east;
+      const query = `
+        [out:json][timeout:60];
+        (
+          way["building"](${south},${west},${north},${east});
+        );
+        out geom;`;
+
+      try{
+        const res = await fetch('https://overpass-api.de/api/interpreter',{
+          method:'POST',
+          headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8'},
+          body:'data='+encodeURIComponent(query)
+        });
+        if(!res.ok){ console.warn('Overpass HTTP', res.status); return {type:'FeatureCollection',features:[]}; }
+        const json = await res.json();
+        return overpassToGeoJSONWithAges(json);
+      }catch(err){
+        console.warn('Overpass fetch failed', err);
+        return {type:'FeatureCollection',features:[]};
+      }
+    }
+
+    async function refreshFromView(){
+      showStatus('Loading OSM + synthetic ages…');
+      currentData = await loadOsmSynthetic();
+      buildingLayer.clearLayers();
+      buildingLayer.addData(currentData);
+      applyYearFilter(+yearInput.value);
+      hideStatus();
+    }
+
+    // ----------------------------
+    // Export helpers
+    // ----------------------------
+    function download(filename, text){
+      const blob = new Blob([text], {type:'text/plain'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+      setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 0);
+    }
+
+    function geomToWkt(geom){
+      if(!geom) return '';
+      if(geom.type === 'Polygon'){
+        const rings = geom.coordinates.map(ring => '('+ring.map(([x,y])=>x+' '+y).join(', ')+')');
+        return 'POLYGON(' + rings.join(', ') + ')';
+      }
+      if(geom.type === 'MultiPolygon'){
+        const polys = geom.coordinates.map(poly => '('+poly.map(ring=>'('+ring.map(([x,y])=>x+' '+y).join(', ')+')').join(', ')+')');
+        return 'MULTIPOLYGON(' + polys.join(', ') + ')';
+      }
+      return '';
+    }
+
+    function exportGeoJSON(){
+      if(!currentData.features.length){ alert('No buildings loaded yet.'); return; }
+      download('cologne_building_age_synthetic.geojson', JSON.stringify(currentData));
+    }
+
+    function exportCSV(){
+      if(!currentData.features.length){ alert('No buildings loaded yet.'); return; }
+      const header = 'id,year_built,synthetic,district,geometry\n';
+      const rows = currentData.features.map(f => {
+        const p = f.properties || {};
+        const id = (p.id || p.osm_id || '').toString().replace(/,/g,'');
+        const yr = p.year_built || '';
+        const syn = p.synthetic ? 1 : 0;
+        const dist = (p.district || '').replace(/,/g,' ');
+        const wkt = geomToWkt(f.geometry).replace(/"/g,'""');
+        return `${id},${yr},${syn},${dist},"${wkt}"`;
+      });
+      download('cologne_building_age_synthetic.csv', header + rows.join('\n'));
+    }
+
+    // ----------------------------
+    // Status helper
+    // ----------------------------
+    function showStatus(text){
+      if(window._statusCtl) window._statusCtl.remove();
+      const ctl = L.control({position:'topright'});
+      ctl.onAdd = () => {
+        const div = L.DomUtil.create('div','pill');
+        div.textContent = text;
+        div.style.background = '#111827';
+        div.style.padding = '7px 10px';
+        return div;
+      };
+      ctl.addTo(map);
+      window._statusCtl = ctl;
+    }
+    function hideStatus(){ if(window._statusCtl){ window._statusCtl.remove(); window._statusCtl=null; } }
+
+    // ----------------------------
+    // Bind UI
+    // ----------------------------
+    document.getElementById('loadOsm').addEventListener('click', refreshFromView);
+    document.getElementById('exportGeoJSON').addEventListener('click', exportGeoJSON);
+    document.getElementById('exportCSV').addEventListener('click', exportCSV);
+
+    const btnAuto = document.getElementById('toggleAuto');
+    btnAuto.addEventListener('click', () => {
+      autoReload = !autoReload;
+      btnAuto.textContent = 'Auto: ' + (autoReload ? 'On' : 'Off');
+    });
+    map.on('moveend', () => { if(autoReload) refreshFromView(); });
+
+    // Initial load (user can also click manually)
+    refreshFromView();
+    setLayerOpacity(currentOpacity);
+
+    // ----------------------------
+    // Self-tests (do not change unless wrong)
+    // ----------------------------
+    (function runSelfTests(){
+      try {
+        console.log('[Tests] Running self-checks…');
+        console.assert(colorForYear(1800) === '#3182bd', 'colorForYear <1850');
+        console.assert(colorForYear(2005) === '#9b2c2c', 'colorForYear 2010–today');
+        console.assert(typeof guessDistrict(50.94,6.96) === 'string', 'guessDistrict returns string');
+        const yrAlt = syntheticYearForDistrict('Altstadt');
+        console.assert(yrAlt >=1850 && yrAlt <=1950, 'Altstadt synthetic range');
+        const yrCh = syntheticYearForDistrict('Chorweiler');
+        console.assert(yrCh >=1970 && yrCh <=2000, 'Chorweiler synthetic range');
+        const wkt = geomToWkt({type:'Polygon',coordinates:[[[6,50],[6.1,50],[6.1,50.1],[6,50.1],[6,50]]]});
+        console.assert(wkt.startsWith('POLYGON('), 'geomToWkt polygon');
+        console.assert(typeof overpassToGeoJSONWithAges === 'function', 'overpassToGeoJSONWithAges exists');
+        console.log('[Tests] ✔ done');
+      } catch (e) {
+        console.error('[Tests] failed', e);
+      }
+    })();
+  </script>
+</body>
+</html>
