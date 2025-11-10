@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Germany Cologne Air Quality Monitor - Real-Time Pollution Map</title>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <style>
+    :root {
+      --bg-deep: #020817;
+      --panel-dark: rgba(9,12,25,0.92);
+      --panel-border: rgba(91,109,153,0.35);
+      --glow-green: #22c55e;
+      --glow-yellow: #eab308;
+      --glow-red: #ef4444;
+      --glass: rgba(15,23,42,0.72);
+      --accent: linear-gradient(120deg, #38bdf8 0%, #6366f1 55%, #ec4899 100%);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg-deep); color: #f9fafb; }
+    body {
+      display: flex;
+      flex-direction: column;
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(56,189,248,0.25), transparent 45%),
+        radial-gradient(circle at 80% 0%, rgba(99,102,241,0.18), transparent 40%),
+        radial-gradient(circle at 50% 100%, rgba(236,72,153,0.14), transparent 50%);
+    }
+
+    #app { display: flex; flex-direction: column; height: 100vh; padding: 12px; gap: 12px; }
+
+    .glass-panel {
+      background: var(--glass);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 20px 60px rgba(2,8,23,0.75);
+      backdrop-filter: blur(16px);
+    }
+
+    .top-bar {
+      padding: 14px 20px;
+      border-radius: 22px;
+      background: radial-gradient(circle at top left, rgba(56,189,248,0.18), transparent), var(--panel-dark);
+      border: 1px solid rgba(148,163,253,0.3);
+      box-shadow: 0 18px 48px rgba(2,8,23,0.65);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .title-block { display: flex; flex-direction: column; gap: 2px; }
+    .title-block h1 { margin: 0; font-size: 20px; letter-spacing: 0.04em; text-transform: uppercase; color: #e5e7eb; }
+    .title-block span { font-size: 12px; color: #9ca3af; }
+
+    .pill-row { display: flex; flex-wrap: wrap; gap: 6px; font-size: 10px; }
+    .pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,253,0.35);
+      background: rgba(15,23,42,0.85);
+      color: #9ca3af;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      backdrop-filter: blur(8px);
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+    .pill:hover { border-color: rgba(56,189,248,0.8); transform: translateY(-1px); }
+    .pill span.icon { font-size: 10px; }
+
+    .layout { flex: 1; display: grid; grid-template-columns: 2fr 1.2fr; gap: 12px; min-height: 0; }
+
+    #map {
+      width: 100%;
+      height: 100%;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 22px 45px rgba(15,23,42,0.85);
+      border: 1px solid rgba(75,85,99,0.6);
+      position: relative;
+      isolation: isolate;
+    }
+    #map::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 30% 20%, rgba(56,189,248,0.12), transparent 45%);
+      mix-blend-mode: screen;
+    }
+
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 24px;
+      background: radial-gradient(circle at top, rgba(79,70,229,0.18), transparent), rgba(9,9,11,0.98);
+      border: 1px solid rgba(75,85,99,0.7);
+      box-shadow: 0 18px 44px rgba(15,23,42,0.9);
+      overflow: hidden;
+    }
+
+    .panel-section {
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(10,16,30,0.98);
+      border: 1px solid rgba(31,41,55,0.9);
+      display: grid;
+      gap: 6px;
+      transition: transform 0.25s ease, border-color 0.25s ease;
+    }
+    .panel-section:hover { transform: translateY(-1px); border-color: rgba(99,102,241,0.45); }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 11px; color: #9ca3af; }
+    .panel-header strong { font-size: 12px; color: #e5e7eb; letter-spacing: 0.06em; text-transform: uppercase; }
+
+    .value-large { font-size: 24px; font-weight: 600; color: #e5e7eb; }
+    .value-label { font-size: 10px; color: #9ca3af; }
+
+    .aqi-badge { padding: 3px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; color: #020817; background: #22c55e; }
+
+    .metric-row { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; font-size: 9px; color: #9ca3af; }
+    .metric-item {
+      padding: 6px 8px;
+      border-radius: 12px;
+      background: rgba(15,23,42,0.85);
+      border: 1px solid rgba(31,41,55,0.9);
+      display: grid;
+      gap: 2px;
+      min-height: 48px;
+    }
+    .metric-item span.label { font-size: 8px; color: #6b7280; text-transform: uppercase; }
+    .metric-item span.value { font-size: 11px; color: #e5e7eb; font-weight: 500; }
+
+    .legend-row { display: flex; flex-wrap: wrap; gap: 4px; font-size: 8px; align-items: center; margin-top: 2px; }
+    .legend-pill { display: inline-flex; align-items: center; gap: 3px; padding: 2px 6px; border-radius: 999px; background: rgba(17,24,39,1); border: 1px solid rgba(55,65,81,0.9); }
+    .legend-color { width: 10px; height: 10px; border-radius: 999px; }
+
+    #pm25Chart { width: 100%; height: 120px; border-radius: 10px; background: radial-gradient(circle at top, rgba(56,189,248,0.06), transparent), #020817; border: 1px solid rgba(31,41,55,0.9); }
+
+    .hint { font-size: 8px; color: #6b7280; }
+
+    .footer { font-size: 8px; color: #6b7280; display: flex; justify-content: space-between; gap: 4px; padding: 2px 4px; }
+    .footer a { color: #9ca3af; text-decoration: none; font-size: 8px; }
+
+    .pulse-highlight {
+      animation: pulseGlow 0.8s ease;
+    }
+
+    @keyframes pulseGlow {
+      0% {
+        box-shadow: 0 0 0 rgba(56,189,248,0.5);
+      }
+      70% {
+        box-shadow: 0 0 18px rgba(56,189,248,0.2);
+      }
+      100% {
+        box-shadow: 0 0 0 rgba(56,189,248,0);
+      }
+    }
+
+    .control-bar {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      justify-content: space-between;
+      margin-top: 4px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #f9fafb;
+      cursor: pointer;
+      background: rgba(56,189,248,0.12);
+      border: 1px solid rgba(56,189,248,0.35);
+      transition: background 0.2s ease, transform 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover { background: rgba(56,189,248,0.22); transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn.ghost { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.35); }
+
+    .status-chip {
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 10px;
+      border: 1px solid rgba(148,163,253,0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0.01em;
+    }
+    .status-chip[data-tone="success"] { border-color: rgba(34,197,94,0.6); background: rgba(34,197,94,0.12); color: #a7f3d0; }
+    .status-chip[data-tone="pending"] { border-color: rgba(234,179,8,0.6); background: rgba(234,179,8,0.12); color: #fef3c7; }
+    .status-chip[data-tone="error"] { border-color: rgba(239,68,68,0.6); background: rgba(239,68,68,0.12); color: #fecaca; }
+
+    .switch {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: #94a3b8;
+    }
+    .switch input {
+      width: 32px;
+      height: 16px;
+      appearance: none;
+      background: rgba(148,163,253,0.25);
+      border-radius: 999px;
+      position: relative;
+      outline: none;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .switch input::after {
+      content: '';
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      position: absolute;
+      top: 1px;
+      left: 2px;
+      transition: transform 0.2s ease;
+    }
+    .switch input:checked {
+      background: linear-gradient(120deg, #34d399, #22c55e);
+    }
+    .switch input:checked::after {
+      transform: translateX(14px);
+    }
+
+    .preset-select {
+      background: rgba(15,23,42,0.85);
+      border: 1px solid rgba(148,163,253,0.4);
+      border-radius: 999px;
+      color: #f8fafc;
+      font-size: 11px;
+      padding: 6px 14px;
+      cursor: pointer;
+      appearance: none;
+      min-width: 150px;
+    }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; grid-template-rows: minmax(260px, 1.8fr) auto; }
+      #map { min-height: 260px; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <header class="top-bar">
+    <div class="title-block">
+      <h1>Cologne Air Quality Monitor</h1>
+      <span>Real-time air quality, weather, and interactive pollution map</span>
+    </div>
+    <div class="pill-row">
+      <div class="pill"><span class="icon">📍</span><span id="location-label">Cologne, Germany</span></div>
+      <div class="pill"><span class="icon">🛰️</span>Open-Meteo API</div>
+      <div class="pill"><span class="icon">🗺️</span>Leaflet, Dark Matter</div>
+      <div class="pill"><span class="icon">📊</span>PM2.5, PM10, NO₂, O₃, AQI</div>
+      <div class="pill" id="source-pill"><span class="icon">🔌</span><span id="source-label">Source: pending</span></div>
+    </div>
+    <div class="control-bar">
+      <div class="control-group">
+        <button class="btn" id="refresh-btn">⟳ Refresh Data</button>
+        <button class="btn ghost" id="locate-btn">📡 Locate Me</button>
+        <label class="switch">
+          <input type="checkbox" id="auto-refresh-toggle" checked />
+          <span>Auto-refresh</span>
+        </label>
+        <div class="status-chip" id="live-status" data-tone="pending">Awaiting data…</div>
+      </div>
+      <div class="control-group">
+        <select class="preset-select" id="preset-select">
+          <option value="">Jump to preset…</option>
+          <option value="50.9413,6.9583">Altstadt-Nord</option>
+          <option value="50.9406,6.9747">Deutz</option>
+          <option value="50.9549,6.9083">Ehrenfeld</option>
+          <option value="50.9174,6.9608">Südstadt</option>
+          <option value="50.9845,7.0008">Leverkusen Boundary</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <div id="map"></div>
+
+    <aside class="side-panel">
+      <!-- AQI Summary -->
+      <section class="panel-section" id="aqi-section">
+        <div class="panel-header">
+          <strong>Air Quality Summary</strong>
+          <span id="last-updated">Updating...</span>
+        </div>
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px;">
+          <div>
+            <div class="value-large" id="aqi-value">--</div>
+            <div class="value-label" id="aqi-text">AQI calculating</div>
+          </div>
+          <div class="aqi-badge" id="aqi-badge">
+            <span>●</span>
+            <span id="aqi-level-label">Pending</span>
+          </div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-item"><span class="label">PM2.5</span><span class="value" id="pm25-value">-- µg/m³</span></div>
+          <div class="metric-item"><span class="label">PM10</span><span class="value" id="pm10-value">-- µg/m³</span></div>
+          <div class="metric-item"><span class="label">NO₂</span><span class="value" id="no2-value">-- µg/m³</span></div>
+          <div class="metric-item"><span class="label">O₃</span><span class="value" id="o3-value">-- µg/m³</span></div>
+          <div class="metric-item"><span class="label">CO</span><span class="value" id="co-value">-- µg/m³</span></div>
+          <div class="metric-item"><span class="label">Coordinate</span><span class="value" id="coord-label">--</span></div>
+        </div>
+        <div class="legend-row">
+          <div class="legend-pill"><span class="legend-color" style="background:#22c55e"></span>0-50 Good</div>
+          <div class="legend-pill"><span class="legend-color" style="background:#eab308"></span>51-100 Moderate</div>
+          <div class="legend-pill"><span class="legend-color" style="background:#ef4444"></span>101-150 Unhealthy</div>
+          <div class="legend-pill"><span class="legend-color" style="background:#8b5cf6"></span>150+ Very unhealthy</div>
+        </div>
+        <div class="hint">Click the map to inspect AQI and pollutants for that point. Poor air quality appears as larger glowing rings. Demo data is used if the API call fails.</div>
+      </section>
+
+      <!-- Rhine Gauge (Pegelonline) -->
+      <section class="panel-section" id="pegel-section">
+        <div class="panel-header">
+          <strong>Rhine Gauge Cologne</strong>
+          <span id="pegel-time-label">Waiting...</span>
+        </div>
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px;">
+          <div>
+            <div class="value-large" id="pegel-value">--</div>
+            <div class="value-label" id="pegel-text">PegelOnline, WSV</div>
+          </div>
+          <div class="aqi-badge" id="pegel-badge" style="background:#38bdf8;color:#020817;">
+            <span>●</span>
+            <span id="pegel-status-label">Data</span>
+          </div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-item"><span class="label">Unit</span><span class="value" id="pegel-unit">--</span></div>
+          <div class="metric-item"><span class="label">Station</span><span class="value" id="pegel-station">KÖLN</span></div>
+          <div class="metric-item"><span class="label">Source</span><span class="value">WSV Pegelonline</span></div>
+          <div class="metric-item"><span class="label">Discharge (Q)</span><span class="value" id="pegel-q">-- m³/s</span></div>
+          <div class="metric-item"><span class="label">Water Temperature (WT)</span><span class="value" id="pegel-wt">-- °C</span></div>
+          <div class="metric-item"><span class="label">Coordinate</span><span class="value" id="pegel-coord">--</span></div>
+        </div>
+        <div class="hint">Gauge data is sourced via the WSV Pegelonline REST API; demo values appear when CORS blocks the call.</div>
+      </section>
+
+      <!-- Weather -->
+      <section class="panel-section">
+        <div class="panel-header">
+          <strong>Current Weather</strong>
+          <span id="weather-time-label">Waiting...</span>
+        </div>
+        <div class="metric-row">
+          <div class="metric-item"><span class="label">Temperature</span><span class="value" id="temp-value">-- °C</span></div>
+          <div class="metric-item"><span class="label">Humidity</span><span class="value" id="humidity-value">-- %</span></div>
+          <div class="metric-item"><span class="label">Wind</span><span class="value" id="wind-value">-- m/s</span></div>
+        </div>
+        <div class="hint">Data comes from the Open-Meteo Weather API. Demo values appear if the call fails.</div>
+      </section>
+
+      <!-- PM2.5 24h Chart -->
+      <section class="panel-section">
+        <div class="panel-header">
+          <strong>Last 24h PM2.5 Trend</strong>
+          <span>µg/m³</span>
+        </div>
+        <canvas id="pm25Chart"></canvas>
+        <div class="hint">Y-axis shows concentration, X-axis shows hours. Data comes from the Open-Meteo Air Quality API or the demo set.</div>
+      </section>
+    </aside>
+  </main>
+
+  <div class="footer">
+    <div>Sources: Open-Meteo Weather API, Open-Meteo Air Quality API, WSV Pegelonline (demo data if offline)</div>
+    <div>Usage: Click the map or use GPS to set a location. Inspect AQI, pollutant values, and the PM2.5 trend.</div>
+  </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script>
+  const CONFIG = {
+    DEMO_FALLBACK_ENABLED: true,
+    PEGEL_REFRESH_MINUTES: 10,
+    PEGEL_STATION_ID: 'a6ee8177-107b-47dd-bcfd-30960ccc6e9c'
+  };
+
+  const defaultLat = 50.9375;
+  const defaultLon = 6.9603;
+
+  const map = L.map('map', { zoomControl: true, attributionControl: true }).setView([defaultLat, defaultLon], 12);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap, &copy; CartoDB' }).addTo(map);
+
+  let aqiCircle = null;
+  let pegelMarker = null;
+  const controls = {
+    refreshBtn: document.getElementById('refresh-btn'),
+    locateBtn: document.getElementById('locate-btn'),
+    autoToggle: document.getElementById('auto-refresh-toggle'),
+    presetSelect: document.getElementById('preset-select'),
+    liveStatus: document.getElementById('live-status')
+  };
+  const AUTO_REFRESH_MS = 5 * 60 * 1000;
+  let autoRefreshTimer = null;
+  let currentLat = defaultLat;
+  let currentLon = defaultLon;
+  let refreshInFlight = null;
+
+  function setLiveStatus(text, tone = 'default') {
+    if (!controls.liveStatus) return;
+    controls.liveStatus.textContent = text;
+    controls.liveStatus.dataset.tone = tone;
+  }
+
+  function pulseSection(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('pulse-highlight');
+    void el.offsetWidth;
+    el.classList.add('pulse-highlight');
+  }
+
+  function startAutoRefresh() {
+    stopAutoRefresh();
+    autoRefreshTimer = setInterval(() => {
+      updateForLocation(currentLat, currentLon, false);
+    }, AUTO_REFRESH_MS);
+  }
+
+  function stopAutoRefresh() {
+    if (autoRefreshTimer) {
+      clearInterval(autoRefreshTimer);
+      autoRefreshTimer = null;
+    }
+  }
+
+  async function handleManualRefresh(centerMap = false) {
+    if (refreshInFlight) return refreshInFlight;
+    if (controls.refreshBtn) controls.refreshBtn.disabled = true;
+    setLiveStatus('Refreshing data…', 'pending');
+    refreshInFlight = updateForLocation(currentLat, currentLon, centerMap)
+      .catch(err => console.error('Manual refresh failed', err))
+      .finally(() => {
+        if (controls.refreshBtn) controls.refreshBtn.disabled = false;
+        refreshInFlight = null;
+      });
+    return refreshInFlight;
+  }
+
+  function attachControlEvents() {
+    controls.refreshBtn?.addEventListener('click', () => handleManualRefresh(false));
+    controls.locateBtn?.addEventListener('click', () => requestGeolocation(true));
+    controls.autoToggle?.addEventListener('change', e => {
+      if (e.target.checked) {
+        startAutoRefresh();
+        setLiveStatus('Auto-refresh enabled', 'success');
+      } else {
+        stopAutoRefresh();
+        setLiveStatus('Auto-refresh paused', 'pending');
+      }
+    });
+    controls.presetSelect?.addEventListener('change', e => {
+      if (!e.target.value) return;
+      const [lat, lon] = e.target.value.split(',').map(Number);
+      if (Number.isFinite(lat) && Number.isFinite(lon)) {
+        const locLabel = document.getElementById('location-label');
+        locLabel.textContent = e.target.options[e.target.selectedIndex].text;
+        locLabel.dataset.manual = '1';
+        updateForLocation(lat, lon, true);
+        setTimeout(() => { e.target.value = ''; }, 400);
+      }
+    });
+  }
+
+  function requestGeolocation(centerMap = true) {
+    if (!navigator.geolocation) {
+      setLiveStatus('Geolocation not supported', 'error');
+      updateForLocation(defaultLat, defaultLon, centerMap);
+      return;
+    }
+    setLiveStatus('Locating device…', 'pending');
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const { latitude, longitude } = pos.coords;
+        const locLabel = document.getElementById('location-label');
+        locLabel.textContent = 'Device location';
+        locLabel.dataset.manual = '1';
+        updateForLocation(latitude, longitude, centerMap);
+      },
+      err => {
+        console.warn('Geolocation error', err);
+        setLiveStatus('Unable to access location', 'error');
+        updateForLocation(defaultLat, defaultLon, centerMap);
+      },
+      { enableHighAccuracy: true, timeout: 7000 }
+    );
+  }
+
+  // AQI HELPERS
+  function getAQIFromPM25(pm25) {
+    if (pm25 == null || isNaN(pm25)) return null;
+    const c = pm25;
+    if (c <= 12.0)  return scaleAQI(c, 0.0,   12.0,   0,   50);
+    if (c <= 35.4)  return scaleAQI(c, 12.1,  35.4,  51,  100);
+    if (c <= 55.4)  return scaleAQI(c, 35.5,  55.4, 101,  150);
+    if (c <= 150.4) return scaleAQI(c, 55.5, 150.4, 151, 200);
+    if (c <= 250.4) return scaleAQI(c,150.5, 250.4, 201, 300);
+    if (c <= 500.4) return scaleAQI(c,250.5, 500.4, 301, 500);
+    return 500;
+  }
+  function scaleAQI(Cp, BP_low, BP_high, I_low, I_high) { return Math.round(((I_high - I_low) / (BP_high - BP_low)) * (Cp - BP_low) + I_low); }
+  function getAQIColor(aqi) { if (aqi == null) return '#6b7280'; if (aqi <= 50) return '#22c55e'; if (aqi <= 100) return '#eab308'; if (aqi <= 150) return '#ef4444'; return '#8b5cf6'; }
+  function getAQILevelText(aqi) { if (aqi == null) return 'No data'; if (aqi <= 50) return 'Good'; if (aqi <= 100) return 'Moderate'; if (aqi <= 150) return 'Unhealthy (Sensitive groups at risk)'; return 'Very unhealthy (Everyone at risk)'; }
+  function getAQIRadius(aqi) { if (aqi == null) return 400; if (aqi <= 50) return 400; if (aqi <= 100) return 700; if (aqi <= 150) return 1000; return 1400; }
+
+  // FETCH & FALLBACK (Open-Meteo)
+  async function fetchData(lat, lon) {
+    const airUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,ozone&timezone=auto`;
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,relative_humidity_2m,windspeed_10m,winddirection_10m&timezone=auto`;
+    try {
+      const [airRes, weatherRes] = await Promise.all([ fetch(airUrl), fetch(weatherUrl) ]);
+      if (!airRes.ok || !weatherRes.ok) throw new Error('Open-Meteo API request failed');
+      const air = await airRes.json();
+      const weather = await weatherRes.json();
+      if (!air.hourly || !air.hourly.time || !air.hourly.pm2_5) throw new Error('Air-Quality API returned an unexpected format');
+      const times = air.hourly.time;
+      const pm25Arr = air.hourly.pm2_5;
+      const pm10Arr = air.hourly.pm10 || [];
+      const no2Arr = air.hourly.nitrogen_dioxide || [];
+      const o3Arr = air.hourly.ozone || [];
+      const coArr = air.hourly.carbon_monoxide || [];
+      const lastIndex = times.length - 1;
+      const current = { time: times[lastIndex], pm25: pm25Arr[lastIndex], pm10: pm10Arr[lastIndex] ?? null, no2: no2Arr[lastIndex] ?? null, o3: o3Arr[lastIndex] ?? null, co: coArr[lastIndex] ?? null };
+      const aqi = getAQIFromPM25(current.pm25);
+      const cw = weather.current_weather || {};
+      return { lat, lon, aqi, current, air, weather, cw, source: 'live', meta: { fetchedAt: new Date().toISOString() } };
+    } catch (error) {
+      console.warn('Open-Meteo request or CORS issue detected. Falling back to demo data.', error);
+      return buildDemoData(lat, lon);
+    }
+  }
+
+  function buildDemoData(lat, lon) {
+    const now = new Date();
+    const times = [], pm25Arr = [], pm10Arr = [], no2Arr = [], o3Arr = [], coArr = [];
+    for (let i = 23; i >= 0; i--) {
+      const t = new Date(now.getTime() - i * 3600000);
+      const iso = t.toISOString().slice(0, 13) + ':00';
+      times.push(iso);
+      const base = 8 + Math.sin(i / 3) * 4;
+      pm25Arr.push(Math.max(3, base));
+      pm10Arr.push(Math.max(5, base * 1.5));
+      no2Arr.push(15 + i % 10);
+      o3Arr.push(30 + (23 - i));
+      coArr.push(200 + i * 2);
+    }
+    const lastIndex = times.length - 1;
+    const current = { time: times[lastIndex], pm25: pm25Arr[lastIndex], pm10: pm10Arr[lastIndex], no2: no2Arr[lastIndex], o3: o3Arr[lastIndex], co: coArr[lastIndex] };
+    const aqi = getAQIFromPM25(current.pm25);
+    const air = { hourly: { time: times, pm2_5: pm25Arr, pm10: pm10Arr, nitrogen_dioxide: no2Arr, ozone: o3Arr, carbon_monoxide: coArr } };
+    const weather = { hourly: { relative_humidity_2m: Array(times.length).fill(65) }, current_weather: { temperature: 18.5, windspeed: 2.4, time: times[lastIndex] } };
+    return { lat, lon, aqi, current, air, weather, cw: weather.current_weather, source: 'demo' };
+  }
+
+  // UI UPDATE
+  function updateUI(data) {
+    const { lat, lon, aqi, current, air, cw, source } = data;
+
+    const coordLabel = document.getElementById('coord-label');
+    const aqiValue = document.getElementById('aqi-value');
+    const aqiText = document.getElementById('aqi-text');
+    const aqiBadge = document.getElementById('aqi-badge');
+    const aqiLevelLabel = document.getElementById('aqi-level-label');
+    const lastUpdated = document.getElementById('last-updated');
+    const locLabel = document.getElementById('location-label');
+    const sourceLabel = document.getElementById('source-label');
+
+    const pm25El = document.getElementById('pm25-value');
+    const pm10El = document.getElementById('pm10-value');
+    const no2El = document.getElementById('no2-value');
+    const o3El = document.getElementById('o3-value');
+    const coEl = document.getElementById('co-value');
+
+    const tempEl = document.getElementById('temp-value');
+    const humEl = document.getElementById('humidity-value');
+    const windEl = document.getElementById('wind-value');
+    const weatherTimeLabel = document.getElementById('weather-time-label');
+
+    coordLabel.textContent = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+    if (sourceLabel) sourceLabel.textContent = `Source: ${source === 'demo' ? 'demo data' : 'live data'}`;
+
+    if (aqi != null) {
+      aqiValue.textContent = aqi;
+      const color = getAQIColor(aqi);
+      aqiBadge.style.background = color;
+      aqiBadge.style.color = '#020817';
+      aqiBadge.querySelectorAll('span').forEach(s => s.style.color = '#020817');
+      aqiLevelLabel.textContent = getAQILevelText(aqi);
+      aqiText.textContent = `Air Quality Index derived from PM2.5 (${source === 'demo' ? 'demo data' : 'live data'})`;
+    } else {
+      aqiValue.textContent = '--';
+      aqiBadge.style.background = '#6b7280';
+      aqiBadge.style.color = '#020817';
+      aqiLevelLabel.textContent = 'No data';
+      aqiText.textContent = 'AQI could not be calculated';
+    }
+
+    pm25El.textContent = current.pm25 != null ? `${current.pm25.toFixed(1)} µg/m³` : '-- µg/m³';
+    pm10El.textContent = current.pm10 != null ? `${current.pm10.toFixed(1)} µg/m³` : '-- µg/m³';
+    no2El.textContent = current.no2 != null ? `${current.no2.toFixed(1)} µg/m³` : '-- µg/m³';
+    o3El.textContent = current.o3 != null ? `${current.o3.toFixed(1)} µg/m³` : '-- µg/m³';
+    coEl.textContent = current.co != null ? `${current.co.toFixed(1)} µg/m³` : '-- µg/m³';
+
+    if (cw && typeof cw.temperature === 'number') {
+      tempEl.textContent = `${cw.temperature.toFixed(1)} °C`;
+      windEl.textContent = `${cw.windspeed != null ? cw.windspeed.toFixed(1) : '--'} m/s`;
+      weatherTimeLabel.textContent = `Last update: ${cw.time || ''}${source === 'demo' ? ' (demo)' : ''}`;
+    } else {
+      tempEl.textContent = '-- °C';
+      windEl.textContent = '-- m/s';
+      weatherTimeLabel.textContent = 'No weather data';
+    }
+
+    const rhSeries = (data.weather.hourly && data.weather.hourly.relative_humidity_2m) || [];
+    humEl.textContent = rhSeries.length ? `${rhSeries[rhSeries.length - 1]} %` : '-- %';
+
+    lastUpdated.textContent = current.time ? `Air: ${current.time} ${source === 'demo' ? '(demo)' : ''}` : 'No time information';
+
+    if (!locLabel.dataset.manual) { locLabel.textContent = source === 'demo' ? 'Demo location' : 'Selected point'; }
+
+    renderPM25Chart(air.hourly.time || [], air.hourly.pm2_5 || []);
+    drawAQICircle(lat, lon, aqi);
+  }
+
+  function drawAQICircle(lat, lon, aqi) {
+    const color = getAQIColor(aqi);
+    const radius = getAQIRadius(aqi);
+    if (aqiCircle) map.removeLayer(aqiCircle);
+    aqiCircle = L.circle([lat, lon], { radius, color, weight: 2, fillColor: color, fillOpacity: 0.18 }).addTo(map);
+  }
+
+  // PM2.5 TREND CANVAS
+  function renderPM25Chart(times, pm25Arr) {
+    const canvas = document.getElementById('pm25Chart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width = canvas.clientWidth;
+    const height = canvas.height = canvas.clientHeight;
+
+    ctx.clearRect(0, 0, width, height);
+    if (!times.length || !pm25Arr.length) { ctx.fillStyle = '#6b7280'; ctx.font = '10px system-ui'; ctx.fillText('No PM2.5 data', 8, height / 2); return; }
+
+    const n = pm25Arr.length;
+    const last24 = 24;
+    const startIndex = Math.max(0, n - last24);
+    const sliceTimes = times.slice(startIndex);
+    const slicePm25 = pm25Arr.slice(startIndex);
+
+    const maxVal = Math.max(...slicePm25, 10);
+    const minVal = 0;
+
+    const paddingLeft = 26, paddingRight = 6, paddingTop = 6, paddingBottom = 14;
+    const chartWidth = width - paddingLeft - paddingRight;
+    const chartHeight = height - paddingTop - paddingBottom;
+
+    ctx.strokeStyle = '#111827'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(paddingLeft, paddingTop); ctx.lineTo(paddingLeft, height - paddingBottom); ctx.lineTo(width - paddingRight, height - paddingBottom); ctx.stroke();
+
+    ctx.fillStyle = '#6b7280'; ctx.font = '8px system-ui';
+    const yTicks = 3;
+    for (let i = 0; i <= yTicks; i++) {
+      const v = minVal + (i * (maxVal - minVal)) / yTicks;
+      const y = paddingTop + chartHeight - (v - minVal) / (maxVal - minVal || 1) * chartHeight;
+      ctx.fillText(Math.round(v).toString(), 2, y + 3);
+      ctx.strokeStyle = 'rgba(31,41,55,0.4)'; ctx.beginPath(); ctx.moveTo(paddingLeft, y); ctx.lineTo(width - paddingRight, y); ctx.stroke();
+    }
+
+    ctx.beginPath();
+    slicePm25.forEach((val, i) => {
+      const x = paddingLeft + (i / Math.max(slicePm25.length - 1, 1)) * chartWidth;
+      const y = paddingTop + chartHeight - (val - minVal) / (maxVal - minVal || 1) * chartHeight;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 1.6; ctx.stroke();
+
+    const gradient = ctx.createLinearGradient(0, paddingTop, 0, paddingTop + chartHeight);
+    gradient.addColorStop(0, 'rgba(56,189,248,0.35)');
+    gradient.addColorStop(1, 'rgba(15,23,42,0)');
+    ctx.lineTo(paddingLeft + chartWidth, paddingTop + chartHeight);
+    ctx.lineTo(paddingLeft, paddingTop + chartHeight);
+    ctx.closePath(); ctx.fillStyle = gradient; ctx.fill();
+
+    ctx.fillStyle = '#6b7280'; ctx.font = '7px system-ui';
+    const labelsCount = Math.min(sliceTimes.length, 4);
+    for (let i = 0; i < labelsCount; i++) {
+      const idx = Math.floor((i / (labelsCount - 1 || 1)) * (sliceTimes.length - 1));
+      const t = sliceTimes[idx];
+      const hour = t ? t.substring(11, 16) : '';
+      const x = paddingLeft + (idx / Math.max(sliceTimes.length - 1, 1)) * chartWidth;
+      ctx.fillText(hour, x - 8, height - 4);
+    }
+  }
+
+  // LOCATION HANDLING
+  async function updateForLocation(lat, lon, centerMap = true) {
+    currentLat = lat;
+    currentLon = lon;
+    const lastUpdated = document.getElementById('last-updated');
+    try {
+      const locLabel = document.getElementById('location-label');
+      if (!locLabel.dataset.manual) { locLabel.textContent = 'Loading...'; }
+      const data = await fetchData(lat, lon);
+      updateUI(data);
+      pulseSection('aqi-section');
+      if (centerMap) { map.setView([lat, lon], 12, { animate: true }); }
+      setLiveStatus('Live data updated just now', 'success');
+    } catch (err) {
+      console.error('updateForLocation error', err);
+      lastUpdated.textContent = 'Error while retrieving data (details in console)';
+      setLiveStatus('Failed to refresh data', 'error');
+      return null;
+    }
+  }
+
+  map.on('click', e => {
+    const { lat, lng } = e.latlng;
+    const locLabel = document.getElementById('location-label');
+    locLabel.textContent = 'Selected point';
+    locLabel.dataset.manual = '1';
+    updateForLocation(lat, lng, false);
+  });
+
+  attachControlEvents();
+  requestGeolocation(true);
+  if (controls.autoToggle?.checked) {
+    startAutoRefresh();
+  }
+
+  // TESTS FOR AQI FUNCTION (kept and expanded)
+  function runAQITests() {
+    const tests = [
+      { pm25: 5,   min: 0,   max: 50 },
+      { pm25: 20,  min: 51,  max: 100 },
+      { pm25: 40,  min: 101, max: 150 },
+      { pm25: 80,  min: 151, max: 200 },
+      { pm25: 0,    min: 0,   max: 50 },
+      { pm25: 12,   min: 0,   max: 50 },
+      { pm25: 12.1, min: 51,  max: 100 },
+      { pm25: 35.4, min: 51,  max: 100 },
+      { pm25: 35.5, min: 101, max: 150 },
+      { pm25: 55.4, min: 101, max: 150 },
+      { pm25: null, expectNull: true },
+      { pm25: NaN,  expectNull: true },
+      { pm25: 800, min: 301, max: 500 }
+    ];
+    tests.forEach(t => {
+      const aqi = getAQIFromPM25(t.pm25);
+      if (t.expectNull) {
+        if (aqi !== null) console.error('AQI TEST FAILED (null case)', t, 'got', aqi); else console.log('AQI TEST OK (null case)', t);
+      } else {
+        if (aqi < t.min || aqi > t.max) console.error('AQI TEST FAILED', t, 'got', aqi); else console.log('AQI TEST OK', t, 'got', aqi);
+      }
+    });
+  }
+  runAQITests();
+
+  // PEGELONLINE (WSV)
+  async function fetchPegel() {
+    const url = `https://pegelonline.wsv.de/webservices/rest-api/v2/stations/${CONFIG.PEGEL_STATION_ID}.json?includeTimeseries=true&includeCurrentMeasurement=true`;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Pegelonline HTTP ' + res.status);
+      const json = await res.json();
+      return parsePegelResponse(json);
+    } catch (e) {
+      console.warn('Pegelonline request or CORS issue detected, falling back to demo data.', e);
+      return buildDemoPegel();
+    }
+  }
+
+  function parsePegelResponse(json) {
+    const lat = Number(json?.latitude);
+    const lon = Number(json?.longitude);
+    const station = json?.shortname || json?.longname || 'KÖLN';
+    const ts = Array.isArray(json?.timeseries) ? json.timeseries : [];
+    const byShort = key => ts.find(s => s?.shortname === key);
+    const W = byShort('W');
+    const Q = byShort('Q');
+    const WT = byShort('WT');
+    const cmW = W?.currentMeasurement || null;
+    if (!cmW) throw new Error('Expected currentMeasurement (W) missing');
+    const value = Number(cmW.value);
+    const unit = W?.unit || 'cm';
+    const time = cmW.timestamp || cmW.time || null;
+    const discharge = Q?.currentMeasurement?.value != null ? Number(Q.currentMeasurement.value) : null;
+    const dischargeUnit = Q?.unit || 'm³/s';
+    const wtemp = WT?.currentMeasurement?.value != null ? Number(WT.currentMeasurement.value) : null;
+    const wtempUnit = WT?.unit || '°C';
+    return { value, unit, time, source: 'live', station, lat, lon, discharge, dischargeUnit, wtemp, wtempUnit };
+  }
+
+  function buildDemoPegel() {
+    const now = new Date().toISOString();
+    return { value: 304, unit: 'cm', time: now, source: 'demo', station: 'KÖLN', lat: 50.93694929574385, lon: 6.963300159749651, discharge: 1910, dischargeUnit: 'm³/s', wtemp: 9.1, wtempUnit: '°C' };
+  }
+
+  function updatePegelUI(data) {
+    const valueEl = document.getElementById('pegel-value');
+    const unitEl = document.getElementById('pegel-unit');
+    const timeEl = document.getElementById('pegel-time-label');
+    const statusEl = document.getElementById('pegel-status-label');
+    const stationEl = document.getElementById('pegel-station');
+    const coordEl = document.getElementById('pegel-coord');
+    const qEl = document.getElementById('pegel-q');
+    const wtEl = document.getElementById('pegel-wt');
+
+    valueEl.textContent = `${data.value}`;
+    unitEl.textContent = data.unit;
+    stationEl.textContent = data.station || 'KÖLN';
+    coordEl.textContent = (data.lat && data.lon) ? `${data.lat.toFixed(5)}, ${data.lon.toFixed(5)}` : '--';
+    qEl.textContent = data.discharge != null ? `${data.discharge} ${data.dischargeUnit || 'm³/s'}` : '-- m³/s';
+    wtEl.textContent = data.wtemp != null ? `${data.wtemp} ${data.wtempUnit || '°C'}` : '-- °C';
+
+    timeEl.textContent = data.time ? `Last update: ${data.time}${data.source==='demo'?' (demo)':''}` : 'No timestamp';
+    statusEl.textContent = data.source === 'demo' ? 'Demo' : 'Live';
+
+    if (data.lat && data.lon) {
+      if (pegelMarker) { map.removeLayer(pegelMarker); }
+      pegelMarker = L.marker([data.lat, data.lon], { title: `Rheinpegel ${data.station || ''}` }).addTo(map);
+    }
+    pulseSection('pegel-section');
+  }
+
+  async function refreshPegel() { const data = await fetchPegel(); updatePegelUI(data); }
+  refreshPegel();
+  setInterval(refreshPegel, CONFIG.PEGEL_REFRESH_MINUTES * 60 * 1000);
+
+  // TESTS FOR PEGEL PARSER
+  (function runPegelTests(){
+    const sample = { "uuid": "a6ee8177-107b-47dd-bcfd-30960ccc6e9c", "number": "2730010", "shortname": "KÖLN", "longname": "KÖLN", "km": 688.0, "agency": "STANDORT KÖLN", "longitude": 6.963300159749651, "latitude": 50.93694929574385, "water": { "shortname": "RHEIN", "longname": "RHEIN" }, "timeseries": [ { "shortname": "W", "longname": "WASSERSTAND ROHDATEN", "unit": "cm", "equidistance": 15, "currentMeasurement": { "timestamp": "2025-11-10T23:00:00+01:00", "value": 304.0, "stateMnwMhw": "normal", "stateNswHsw": "normal" }, "gaugeZero": { "unit": "m. ü. NHN", "value": 35.038, "validFrom": "2019-11-01" } }, { "shortname": "Q", "longname": "ABFLUSS_ROHDATEN", "unit": "m³/s", "equidistance": 15, "currentMeasurement": { "timestamp": "2025-11-10T22:45:00+01:00", "value": 1910.0 } }, { "shortname": "WT", "longname": "WASSERTEMPERATUR ROHDATEN", "unit": "°C", "equidistance": 15, "currentMeasurement": { "timestamp": "2025-11-10T23:00:00+01:00", "value": 9.1 } } ] };
+    const parsed = parsePegelResponse(sample);
+    const ok = parsed.value === 304 && parsed.unit === 'cm' && parsed.discharge === 1910 && parsed.wtemp === 9.1 && Math.abs(parsed.lat - 50.9369493) < 1e-4 && Math.abs(parsed.lon - 6.9633002) < 1e-4;
+    if (!ok) { console.error('PEGEL TEST FAILED (user sample)', parsed); } else { console.log('PEGEL TEST OK (user sample)', parsed); }
+    const demo = buildDemoPegel();
+    if (!demo.value || demo.unit !== 'cm' || demo.discharge == null || demo.wtemp == null) { console.error('PEGEL TEST FAILED (demo)'); } else { console.log('PEGEL TEST OK (demo)', demo); }
+  })();
+</script>
+</body>
+</html>
