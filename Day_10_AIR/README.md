@@ -3,7 +3,7 @@
 
 
 
-# Cologne Air & Water Monitor  
+# 𝗖𝗼𝗹𝗼𝗴𝗻𝗲 𝗔𝗶𝗿 𝗤𝘂𝗮𝗹𝗶𝘁𝘆 𝗪𝗲𝗯𝗔𝗽𝗽 (𝘄𝗶𝘁𝗵 𝗔𝗜 𝗔𝘀𝘀𝗶𝘀𝘁𝗮𝗻𝘁) 
 Day 10: AIR, part of **#30DayMapChallenge2025**
 
 A modern, React based dashboard for **Cologne environmental monitoring**.  
