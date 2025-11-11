@@ -1,0 +1,9 @@
+
+{
+  "name": "Cologne Air & Water Monitor",
+  "description": "Real-time environmental data for Cologne, Germany, featuring air quality, Rhine water levels, and weather information, enhanced with an AI assistant.",
+  "requestFramePermissions": [
+    "geolocation",
+    "camera"
+  ]
+}

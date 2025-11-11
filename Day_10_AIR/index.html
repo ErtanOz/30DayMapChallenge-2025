@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cologne Air & Water Monitor - Real-Time Environmental Data</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'bg-primary': '#111827',
+            'bg-secondary': '#1f2937',
+            'bg-tertiary': '#374151',
+            'border-primary': '#4b5563',
+            'border-secondary': '#374151',
+            'text-primary': '#f9fafb',
+            'text-secondary': '#d1d5db',
+            'text-tertiary': '#9ca3af',
+            'accent-blue': '#3b82f6',
+            'accent-green': '#22c55e',
+            'accent-yellow': '#eab308',
+            'accent-red': '#ef4444',
+            'accent-purple': '#8b5cf6',
+          },
+          boxShadow: {
+            'lg-custom': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+            'xl-custom': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer base {
+      html, body, #app {
+        @apply h-full m-0 p-0 font-sans bg-bg-primary text-text-primary text-sm;
+      }
+      /* Custom scrollbar */
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: var(--bg-secondary); }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 3px; }
+
+      .pulse-highlight {
+        animation: pulseGlow 1s ease-out;
+      }
+      @keyframes pulseGlow {
+        0% { border-color: theme('colors.accent-blue'); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+        100% { border-color: theme('colors.border-secondary'); box-shadow: none; }
+      }
+    }
+  </style>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script type="importmap">
+{
+  "imports": {
+    "leaflet": "https://aistudiocdn.com/leaflet@^1.9.4",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.0",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "chart.js/": "https://aistudiocdn.com/chart.js@^4.5.1/",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "chartjs-adapter-date-fns": "https://aistudiocdn.com/chartjs-adapter-date-fns@^3.0.0",
+    "leaflet.heat": "https://aistudiocdn.com/leaflet.heat@^0.2.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+<div id="app"></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<!-- Leaflet.heat JS for heatmap -->
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<!-- Chart.js and adapter already loaded by importmap -->
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
