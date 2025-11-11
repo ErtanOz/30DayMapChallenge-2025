@@ -14,7 +14,7 @@
 | 7 | Accessibility | Cologne Public Transport Network| https://ertanoz.github.io/30DayMapChallenge-2025/Day_7_Accessibility/maps/day07_cologne.html|
 | 8 | Urban | Cologne_building_age_map |https://ertanoz.github.io/30DayMapChallenge-2025/Day_8_Urban/Day_8_Urban_cologne_building_age_map.html |
 | 9 | Analog | | |
-| 10 | Air | | |
+| 10 | Air | | https://zingy-stroopwafel-e5f71b.netlify.app/|
 | 11 | Minimal | | |
 | 12 | Future | | |
 | 13 | 10-minute | | |
