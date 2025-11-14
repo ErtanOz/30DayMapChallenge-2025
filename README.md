@@ -16,8 +16,8 @@
 | 9 | Analog | | |
 | 10 | Air | 𝗖𝗼𝗹𝗼𝗴𝗻𝗲 𝗔𝗶𝗿 𝗤𝘂𝗮𝗹𝗶𝘁𝘆 𝗪𝗲𝗯𝗔𝗽𝗽 (𝘄𝗶𝘁𝗵 𝗔𝗜 𝗔𝘀𝘀𝗶𝘀𝘁𝗮𝗻𝘁)| https://glowing-taffy-f007fa.netlify.app/|
 | 11 | Minimal | | |
-| 12 | Future | | |
-| 13 | 10-minute | | |
+| 12 | Future | Köln 2125 Stadt der Zukunft|https://www.youtube.com/watch?v=kJC5pk3OGp8&t=20s |
+| 13 | 10-minute |🎄 𝗞ö𝗹𝗻 𝗪𝗲𝗶𝗵𝗻𝗮𝗰𝗵𝘁𝘀𝗺𝗮𝗿𝗸𝘁 𝗠𝗮𝗽 (𝗖𝗼𝗹𝗼𝗴𝗻𝗲 𝗖𝗵𝗿𝗶𝘀𝘁𝗺𝗮𝘀 𝗠𝗮𝗿𝗸𝗲𝘁 𝗠𝗮𝗽 ) | https://ertanoz.github.io/30DayMapChallenge-2025/Day_13_10_minutes_Map/Day_13_10minutesMap_Mobile.html|
 | 14 | OSM Challenge |  | |
 | 15 | Fire | | |
 | 16 | Cells |  | |
