@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="description" content="Interaktive Karte aller Weihnachtsmärkte in Köln 2025 - Mobile optimiert" />
+    <title>Kölner Weihnachtsmärkte 2025</title>
+    
+    <!-- Mobile Optimizations -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Weihnachtsmärkte">
+    <meta name="theme-color" content="#1c1917">
+    <meta name="format-detection" content="telephone=no">
+    
+    <!-- iOS Icon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%231c1917' width='180' height='180'/><text x='90' y='120' font-size='100' text-anchor='middle' fill='%23facc15'>🎄</text></svg>">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=EB+Garamond&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+        
+        html, body, #root {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'EB Garamond', serif;
+            position: fixed;
+            overscroll-behavior: none;
+        }
+        
+        h1, h2, h3 {
+            font-family: 'Cinzel', serif;
+        }
+        
+        .leaflet-container {
+            height: 100%;
+            width: 100%;
+            background-color: #f3f4f6;
+            touch-action: pan-x pan-y;
+        }
+        
+        /* Mobile-optimized touch areas */
+        .touch-target {
+            min-height: 44px;
+            min-width: 44px;
+        }
+        
+        /* Festive Popup Styling */
+        .leaflet-popup-content-wrapper {
+            background-color: #1c1917;
+            background-image: url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M12 2L12 22M2 12L22 12M5.636 5.636L18.364 18.364M5.636 18.364L18.364 5.636M12 6L14.121 8.121M12 6L9.879 8.121M12 18L14.121 15.879M12 18L9.879 15.879M18.364 12L15.879 9.879M18.364 12L15.879 14.121M5.636 12L8.121 9.879M5.636 12L8.121 14.121" stroke="rgba(250, 204, 21, 0.08)" stroke-width="1" fill="none"/%3E%3C/svg%3E');
+            color: #d6d3d1;
+            border-radius: 12px;
+            border: 2px solid #f59e0b;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.6), 0 6px 15px rgba(0,0,0,0.7);
+            padding: 0;
+            max-width: 90vw;
+        }
+        
+        .leaflet-popup-content {
+            margin: 0;
+            width: 100% !important;
+            max-width: 320px;
+        }
+        
+        .leaflet-popup-tip {
+            background: #1c1917;
+        }
+        
+        .leaflet-popup-close-button {
+            color: #facc15 !important;
+            padding: 8px !important;
+            font-size: 24px !important;
+            width: 44px;
+            height: 44px;
+            line-height: 1;
+        }
+        
+        /* Locate Button - Mobile Optimized */
+        .locate-btn {
+            background-color: #292524;
+            border: 2px solid #facc15;
+            color: #facc15;
+            border-radius: 12px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+            touch-action: manipulation;
+        }
+        
+        .locate-btn:active {
+            transform: scale(0.95);
+            background-color: #44403c;
+        }
+        
+        /* Zoom Controls - Mobile Optimized with High z-index */
+        .leaflet-control-zoom {
+            border: 2px solid #facc15 !important;
+            border-radius: 12px !important;
+            overflow: hidden !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.8) !important;
+            margin: 0 !important;
+            z-index: 2000 !important;
+            position: relative !important;
+        }
+
+        .leaflet-top.leaflet-left {
+            top: 16px !important;
+            left: 16px !important;
+            z-index: 2000 !important;
+        }
+        
+        .leaflet-control-zoom a {
+            background-color: #292524 !important;
+            border: none !important;
+            color: #facc15 !important;
+            width: 46px !important;
+            height: 46px !important;
+            line-height: 46px !important;
+            font-size: 24px !important;
+            font-weight: bold !important;
+            text-align: center !important;
+            transition: all 0.2s ease !important;
+        }
+        
+        .leaflet-control-zoom a:hover,
+        .leaflet-control-zoom a:active {
+            background-color: #44403c !important;
+            color: #fbbf24 !important;
+        }
+        
+        .leaflet-control-zoom a:first-child {
+            border-bottom: 1px solid #57534e !important;
+        }
+        
+        .leaflet-bar {
+            border: none !important;
+        }
+        
+        /* Mobile Sidebar */
+        .sidebar {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+        
+        .sidebar.collapsed {
+            transform: translateY(calc(100% - 80px));
+        }
+        
+        .sidebar.expanded {
+            transform: translateY(0);
+        }
+        
+        /* Smooth Scrolling */
+        .scroll-container {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+        
+        /* Snowfall - Reduced for Mobile Performance */
+        .snowflake {
+            color: #fff;
+            font-size: 1em;
+            text-shadow: 0 0 5px #000;
+            position: absolute;
+            top: -10%;
+            z-index: 9999;
+            user-select: none;
+            pointer-events: none;
+            animation: snowfall 10s linear infinite, shake 3s ease-in-out infinite;
+        }
+        
+        @keyframes snowfall {
+            0% { top: -10%; }
+            100% { top: 100%; }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(40px); }
+        }
+        
+        .snowflake:nth-of-type(1) { left: 10%; animation-delay: 0s; }
+        .snowflake:nth-of-type(2) { left: 30%; animation-delay: 2s; }
+        .snowflake:nth-of-type(3) { left: 50%; animation-delay: 4s; }
+        .snowflake:nth-of-type(4) { left: 70%; animation-delay: 1s; }
+        .snowflake:nth-of-type(5) { left: 90%; animation-delay: 3s; }
+        
+        /* Loading Indicator */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #facc15;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Safe Areas for iOS Notch */
+        @supports (padding: max(0px)) {
+            .safe-top {
+                padding-top: max(16px, env(safe-area-inset-top));
+            }
+            .safe-bottom {
+                padding-bottom: max(16px, env(safe-area-inset-bottom));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Snowfall (Reduced for Mobile) -->
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❅</div>
+    
+    <!-- Main Container -->
+    <div class="h-screen w-screen flex flex-col bg-stone-900 text-stone-200 relative overflow-hidden">
+        
+        <!-- Map Container -->
+        <div class="flex-grow h-full w-full relative">
+            <div id="map" class="h-full w-full"></div>
+            
+            <!-- Locate Button - Top Right -->
+            <div class="absolute top-4 right-4 z-[2000] safe-top">
+                <button onclick="locateUser()" class="locate-btn touch-target" title="Mein Standort" aria-label="Standort finden" style="outline: 2px solid blue;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Sidebar - Lower z-index than map controls -->
+        <aside id="sidebar" class="sidebar collapsed z-[999] bg-stone-800/95 backdrop-blur-sm shadow-lg flex flex-col absolute bottom-0 left-0 right-0 h-[85vh] border-t-2 border-amber-500/30 safe-bottom">
+            
+            <!-- Header - Touch Target -->
+            <header onclick="toggleSidebar()" class="touch-target px-4 py-6 bg-black/30 border-b border-black/30 shadow-lg cursor-pointer flex justify-between items-center">
+                <div class="flex-1">
+                    <h1 class="text-xl md:text-2xl font-bold text-stone-100 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 md:h-8 md:w-8 mr-2 text-amber-400" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2.5l2.42 5.38 5.58.81-4.04 3.93.95 5.56L12 15.4l-5.91 3.78.95-5.56-4.04-3.93 5.58-.81L12 2.5z"/>
+                        </svg>
+                        Weihnachtsmärkte 2025
+                    </h1>
+                    <p class="text-sm text-stone-400 mt-1" id="sidebarHint">
+                        Tippen zum Öffnen
+                    </p>
+                </div>
+                <div>
+                    <svg id="toggleIcon" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-amber-400 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+                    </svg>
+                </div>
+            </header>
+            
+            <!-- Market List - Scrollable -->
+            <div id="marketList" class="overflow-y-auto flex-grow scroll-container"></div>
+            
+            <!-- Weather Widget -->
+            <footer class="mt-auto bg-black/30 border-t border-black/30 safe-bottom">
+                <div id="weather" class="p-4 text-center text-stone-400">
+                    <div class="loading"></div>
+                </div>
+            </footer>
+        </aside>
+    </div>
+
+    <script>
+        // Prevent Pull-to-Refresh on Mobile
+        let lastTouchY = 0;
+        let preventPullToRefresh = false;
+
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1) return;
+            lastTouchY = e.touches[0].clientY;
+            preventPullToRefresh = window.pageYOffset === 0;
+        }, { passive: false });
+
+        document.addEventListener('touchmove', (e) => {
+            const touchY = e.touches[0].clientY;
+            const touchYDelta = touchY - lastTouchY;
+            lastTouchY = touchY;
+
+            if (preventPullToRefresh) {
+                if (touchYDelta > 0) {
+                    e.preventDefault();
+                    return;
+                }
+                preventPullToRefresh = false;
+            }
+        }, { passive: false });
+        
+        // Alle 41 Weihnachtsmärkte in Köln 2025
+        const MARKETS = [
+            {id:1,name:"Weihnachtsmarkt am Kölner Dom",lat:50.941278,lon:6.958281,start:"17.11.2025",end:"23.12.2025",ort:"Roncalliplatz 1",stadtteil:"Altstadt Nord",image:"https://www.koeln.de/wp-content/uploads/2023/08/weihnachtsmarkt-am-koelner-dom-imago-futureimage-95332928-1.jpg",desc:"Großer Markt mit Lichterzelt und hohem Weihnachtsbaum direkt am Dom",hours:"So-Mi 11:00-21:00, Do-Fr 11:00-22:00, Sa 10:00-22:00",website:"https://www.koelnerweihnachtsmarkt.com/"},
+            {id:2,name:"Markt der Engel Neumarkt",lat:50.936002,lon:6.947546,start:"17.11.2025",end:"23.12.2025",ort:"Neumarkt 1",stadtteil:"Innenstadt",image:"https://www.koeln.de/wp-content/uploads/2023/08/weihnachtsmarkt-markt-der-engel-neumarkt-adobestock_188230906-1-800x470.jpeg",desc:"Stimmungsvoller Markt mit vielen Sternenlichtern und Engel-Deko",hours:"So-Do 11:00-21:00, Fr-Sa 11:00-22:00",website:"https://www.markt-der-engel.de/"},
+            {id:3,name:"Heinzels Wintermärchen Altstadt",lat:50.9394,lon:6.9599,start:"24.11.2025",end:"04.01.2026",ort:"Alter Markt/Heumarkt",stadtteil:"Altstadt",image:"https://www.koeln.de/wp-content/uploads/2023/08/weihnachtsmarkt-koelner-altstadt-jochen-tack-imago95344912-1-800x470.jpg",desc:"Großer Altstadtmarkt mit Eislaufbahn, Handwerk und Buden",hours:"Täglich 11:00-22:00, ab 26.12 11:00-21:00",website:"https://www.heinzels-wintermaerchen.de/"},
+            {id:4,name:"Nikolausdorf Rudolfplatz",lat:50.9369,lon:6.9378,start:"17.11.2025",end:"23.12.2025",ort:"Rudolfplatz 1",stadtteil:"Neustadt Süd",image:"https://www.koeln.de/wp-content/uploads/2023/08/weihnachtsmarkt-am-rudolfplatz-imago-futureimage-95332928-1-800x470.jpg",desc:"Familienfreundlicher Weihnachtsmarkt mit Nikolausdorf-Kulisse",hours:"So-Do 11:00-21:00, Fr-Sa 11:00-22:00",website:"https://www.nikolausdorf.com/"},
+            {id:5,name:"Hafen-Weihnachtsmarkt",lat:50.9322,lon:6.9638,start:"14.11.2025",end:"23.12.2025",ort:"Am Schokoladenmuseum 1a",stadtteil:"Altstadt Süd",image:"https://www.koeln.de/wp-content/uploads/2023/08/hafenweihnachtsmarkt-imago-zoonar-0170166521.jpg",desc:"Maritimer Markt am Schokoladenmuseum mit Rheinblick",hours:"Täglich 11:00-21:00, Fr-Sa 11:00-22:00",website:"https://www.hafen-weihnachtsmarkt.de/"},
+            {id:6,name:"Weihnachtsmarkt im Stadtgarten",lat:50.9435,lon:6.9380,start:"14.11.2025",end:"23.12.2025",ort:"Venloer Str. 40",stadtteil:"Belgisches Viertel",image:"https://www.koeln.de/wp-content/uploads/2024/11/Weihnachtsmarkt-Stadtgarten06-Vincent-Alex-2000-800x470.jpg",desc:"Design- und Kunsthandwerksmarkt unter großen Bäumen",hours:"Mo-Fr 16:00-21:30, Sa-So 12:00-21:30",website:"https://www.stadtgarten.de/"},
+            {id:7,name:"Veedelsadvent Chlodwigplatz",lat:50.9232,lon:6.9560,start:"20.11.2025",end:"23.12.2025",ort:"Chlodwigplatz",stadtteil:"Südstadt",image:"https://www.koeln.de/wp-content/uploads/2023/10/clodwigplatz_weihnachtsmarkt_2016-27-von-37-800x470.jpg",desc:"Kleiner lokaler Markt mit Südstadt-Flair",hours:"Täglich 12:00-22:00, Fr-Sa bis 23:00",website:"https://veedelsadvent.de/"},
+            {id:8,name:"Heavenue Cologne",lat:50.9406,lon:6.9421,start:"17.11.2025",end:"23.12.2025",ort:"Friesenplatz 1",stadtteil:"Friesenplatz",image:"https://www.koeln.de/wp-content/uploads/2023/10/Weihnachtsmarkt-AdobeStock_128195075-800x470.jpg",desc:"Bunter LGBTQ+ Weihnachtsmarkt mit Shows und Musik",hours:"Mo-Do 12:00-22:00, Fr 12:00-23:00, Sa 11:00-23:00, So 11:00-22:00",website:"https://www.heavenue-cologne.de/"},
+            {id:9,name:"Winterzauber Eigelstein",lat:50.9479,lon:6.9563,start:"03.12.2025",end:"07.12.2025",ort:"Eigelsteintorburg",stadtteil:"Eigelstein",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Kleiner Markt an der Eigelsteintorburg mit Musik und Gastro",hours:"Mi-Fr 15:00-22:00, Sa 14:00-22:00, So 14:00-21:00",website:"https://www.eigelstein-koeln.de/"},
+            {id:10,name:"Der kleinste Weihnachtsmarkt der Stadt",lat:50.9238,lon:6.9455,start:"19.11.2025",end:"20.12.2025",ort:"Volksgartenstr. 27",stadtteil:"Südstadt",image:"https://www.koeln.de/wp-content/uploads/2023/10/Weihnachtsmarkt-AdobeStock_128195075-800x470.jpg",desc:"Gemütlicher Benefizmarkt im Volksgarten",hours:"Mo-Fr 17:00-22:00, Sa 15:00-22:00, So 15:00-20:00",website:"https://www.volksgarten.koeln/"},
+            {id:11,name:"Weihnachtsmarkt St. Aposteln",lat:50.9372,lon:6.9443,start:"17.11.2025",end:"23.12.2025",ort:"Apostelnkloster 1",stadtteil:"Innenstadt",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Kirchennaher Weihnachtsmarkt neben Neumarkt",hours:"Täglich ca. 11:00-22:00",website:"https://www.st-aposteln.de/"},
+            {id:12,name:"Weihnachtsbasar Josef-Esser-Platz",lat:50.9634,lon:6.8943,start:"29.11.2025",end:"30.11.2025",ort:"Josef-Esser-Platz",stadtteil:"Bickendorf",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Nachbarschaftlicher Markt im Veedel",hours:"Nachmittags-Abends",website:"https://www.koeln.de"},
+            {id:13,name:"Dellbrücker Weihnachtsmarkt",lat:50.9882,lon:7.0865,start:"29.11.2025",end:"29.11.2025",ort:"Adler Dellbrück",stadtteil:"Dellbrück",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Traditioneller Markt beim SV Adler Dellbrück",hours:"Ab 15:00",website:"https://www.koeln.de"},
+            {id:14,name:"Waldbad Dünnwald Weihnachtsmarkt",lat:51.0028,lon:7.0425,start:"13.12.2025",end:"14.12.2025",ort:"Peter-Bergner-Weg 2",stadtteil:"Dünnwald",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Stimmungsvoller Markt im Waldbad",hours:"Sa 14:00-20:00, So 11:00-18:00",website:"https://waldbad-camping.de/"},
+            {id:15,name:"Dünnwalder Adventsmarkt",lat:50.9995,lon:7.0336,start:"30.11.2025",end:"30.11.2025",ort:"Kirchplatz St. Hermann-Joseph",stadtteil:"Dünnwald",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Kleiner Markt vor der Kirche",hours:"12:00-18:00",website:"https://www.koeln.de"},
+            {id:16,name:"Weihnachtsmarkt Herbrands",lat:50.9497,lon:6.9211,start:"21.11.2025",end:"23.12.2025",ort:"Herbrandstr. 21",stadtteil:"Ehrenfeld",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Indoor & Hofmarkt im Herbrands",hours:"Ab Nachmittags",website:"https://www.herbrands.de/"},
+            {id:17,name:"Bumann & Sohn Weihnachtsmarkt",lat:50.9482,lon:6.9205,start:"13.11.2025",end:"23.12.2025",ort:"Bartholomäus-Schink-Str. 2",stadtteil:"Ehrenfeld",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Alternative Szene, Musik & Streetfood",hours:"Nachmittags-Abends",website:"https://bumannundsohn.de/"},
+            {id:18,name:"Wintermarkt CBE Ehrenfeld",lat:50.9494,lon:6.9200,start:"16.11.2025",end:"23.12.2025",ort:"Venloer Str. 429",stadtteil:"Ehrenfeld",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Nachbarschaftlicher Indoor-Wintermarkt",hours:"Nachmittags",website:"https://www.cbe.koeln/"},
+            {id:19,name:"Garagen-Glüh'n Körnerstrasse",lat:50.9507,lon:6.9281,start:"06.12.2025",end:"07.12.2025",ort:"Körnerstr.",stadtteil:"Ehrenfeld",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Beliebter Garagen-Hof-Weihnachtsmarkt",hours:"Tagsüber-Abends",website:"https://www.koeln.de"},
+            {id:20,name:"Advent am Geisselmarkt",lat:50.9491,lon:6.9299,start:"23.11.2025",end:"23.11.2025",ort:"Geisselmarkt",stadtteil:"Ehrenfeld",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Kleiner Adventstreff",hours:"11:00-17:00",website:"https://www.koeln.de"},
+            {id:21,name:"Traditioneller Weihnachtsmarkt Esch",lat:51.0185,lon:6.8340,start:"29.11.2025",end:"30.11.2025",ort:"Kirchgasse",stadtteil:"Esch",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Veedelmarkt im Dorfkern",hours:"Nachmittags",website:"https://www.koeln.de"},
+            {id:22,name:"Reitstall Birkenhof Weihnachtsmarkt",lat:50.9922,lon:7.0583,start:"14.11.2025",end:"21.12.2025",ort:"Birkenhof",stadtteil:"Höhenhaus",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Reiterhof-Weihnachtsmarkt",hours:"Fr-Sa-So 15:00-22:00",website:"https://www.instagram.com/birkenhof/"},
+            {id:23,name:"Kalk Vegan Christmas Market",lat:50.9404,lon:6.9999,start:"05.12.2025",end:"21.12.2025",ort:"Steinmetzstr. 57",stadtteil:"Kalk",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Veganer Adventsmarkt an 3 Wochenenden",hours:"Fr-So 15:00-21:00",website:"https://www.koeln.de"},
+            {id:24,name:"Lindenthal Advent Karl-Schwering-Platz",lat:50.9279,lon:6.9157,start:"20.11.2025",end:"23.12.2025",ort:"Karl-Schwering-Platz 1",stadtteil:"Lindenthal",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Kleiner Adventsmarkt im Zentrum",hours:"12:00-22:00",website:"https://www.koeln.de"},
+            {id:25,name:"Winterzauber am See Stadtwald",lat:50.9246,lon:6.9038,start:"21.11.2025",end:"28.12.2025",ort:"Dürener Str. 287",stadtteil:"Lindenthal",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Winterterrasse am See beim Leonardo Hotel",hours:"Nachmittags-Abends",website:"https://www.leonardo-hotels.com/"},
+            {id:26,name:"Lindweiler Weihnachtsmarkt",lat:51.0069,lon:6.9056,start:"12.12.2025",end:"14.12.2025",ort:"Marienberger Weg 19",stadtteil:"Lindweiler",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Veedelmarkt für Familien",hours:"Nachmittags",website:"https://www.bv-lindweiler.de/"},
+            {id:27,name:"Weihnachtsmarkt Merheim",lat:50.9469,lon:7.0543,start:"06.12.2025",end:"06.12.2025",ort:"Walnussweg",stadtteil:"Merheim",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Kleiner Markt auf dem Bauspielplatz",hours:"13:30-17:30",website:"https://bauspielplatz-merheim.de/"},
+            {id:28,name:"Lenauplatz Weihnachtsdorf",lat:50.9559,lon:6.9231,start:"28.11.2025",end:"23.12.2025",ort:"Lenauplatz",stadtteil:"Neuehrenfeld",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Beliebter Veedel-Weihnachtsmarkt",hours:"Mo-Do 16:30-21:30, Fr-So ab 14:00",website:"https://www.koeln.de"},
+            {id:29,name:"Weihnachtsmarkt Lutherkirche",lat:50.9620,lon:6.9467,start:"13.12.2025",end:"14.12.2025",ort:"Lutherkirche Nippes",stadtteil:"Nippes",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Markt an der Lutherkirche",hours:"12:00-18:00",website:"https://www.lutherkirche-nippes.de/"},
+            {id:30,name:"Ostheimer Weihnachtsmarkt",lat:50.9385,lon:7.0438,start:"07.12.2025",end:"07.12.2025",ort:"Ostheim",stadtteil:"Ostheim",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Veedelsmarkt auf dem Vorplatz",hours:"12:00-18:00",website:"https://www.koeln.de"},
+            {id:31,name:"Pescher Christkindlmarkt",lat:51.0076,lon:6.8550,start:"07.12.2025",end:"07.12.2025",ort:"Pesch",stadtteil:"Pesch",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Kleiner Adventsmarkt",hours:"11:00-18:00",website:"https://www.koeln.de"},
+            {id:32,name:"Waldweihnacht Gut Leidenhausen",lat:50.8879,lon:7.0825,start:"29.11.2025",end:"30.11.2025",ort:"Gut Leidenhausen",stadtteil:"Porz",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Waldweihnachtsmarkt mit Naturbezug",hours:"11:00-20:00",website:"https://www.gut-leidenhausen.de/"},
+            {id:33,name:"Mittelalter Weihnachtsmarkt Alexianer",lat:50.8753,lon:7.0435,start:"21.11.2025",end:"22.11.2025",ort:"Kölner Str. 64",stadtteil:"Porz",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Mittelaltermarkt im Alexianer Gelände",hours:"Fr 07:00-20:00, Sa 10:00-19:00",website:"https://www.alexianer.de/"},
+            {id:34,name:"Porzer Weihnachtsmarkt City Center",lat:50.8879,lon:7.0427,start:"12.12.2025",end:"14.12.2025",ort:"City Center Porz",stadtteil:"Porz",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Stadtteilmarkt mit Wunschbaumaktion",hours:"13:00-18:00",website:"https://www.koeln.de"},
+            {id:35,name:"Adventsmarkt Wahner Wibbelstetze",lat:50.8770,lon:7.0801,start:"29.11.2025",end:"30.11.2025",ort:"Wahn Marktplatz",stadtteil:"Porz Wahn",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Karnevalsverein Adventsmarkt",hours:"Nachmittags",website:"https://wahner-wibbelstetze.de/"},
+            {id:36,name:"Weihnachtsmarkt Rath-Heumar",lat:50.9332,lon:7.0722,start:"05.12.2025",end:"07.12.2025",ort:"Kurt-Henn-Platz",stadtteil:"Rath-Heumar",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Veedelsmarkt",hours:"Nachmittags",website:"https://www.koeln.de"},
+            {id:37,name:"Winterzauber Maternusplatz",lat:50.8953,lon:6.9740,start:"05.12.2025",end:"07.12.2025",ort:"Maternusplatz",stadtteil:"Rodenkirchen",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Kleiner Wintermarkt",hours:"Nachmittags-Abends",website:"https://www.koeln.de"},
+            {id:38,name:"Sülzer Weihnachtsdorf",lat:50.9192,lon:6.9189,start:"25.11.2025",end:"23.12.2025",ort:"Elisabeth-von-Mumm-Platz",stadtteil:"Sülz",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Großer Veedelmarkt",hours:"Mo-Fr 16:00-22:00, Sa-So 12:00-22:00",website:"https://www.suelzer-weihnachtsdorf.de/"},
+            {id:39,name:"Christmas G'art'en Wachsfabrik",lat:50.8703,lon:6.9959,start:"13.12.2025",end:"14.12.2025",ort:"Industriestr. 170",stadtteil:"Sürth",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Kunst- & Designmarkt",hours:"Nachmittags",website:"https://www.wachsfabrik.de/"},
+            {id:40,name:"Sürther Weihnachtsmarkt",lat:50.8745,lon:6.9995,start:"05.12.2025",end:"07.12.2025",ort:"Marktplatz Sürth",stadtteil:"Sürth",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Veedelsmarkt",hours:"Nachmittags",website:"https://www.koeln.de"},
+            {id:41,name:"Zollstocker Adventsmarkt",lat:50.9069,lon:6.9365,start:"06.12.2025",end:"07.12.2025",ort:"Zollstock, St. Pius",stadtteil:"Zollstock",image:"https://www.koeln.de/wp-content/uploads/2023/10/weihnachtsmakt-koeln-altstadt-2019-sw-0029.jpg",desc:"Markt rund um St. Pius",hours:"Sa 14:00-20:00, So 12:00-18:00",website:"https://www.koeln.de"}
+        ];
+        
+        let map, markers = {}, selectedMarket = null, sidebarExpanded = false;
+        
+        // Initialize Map with Mobile Settings
+        function initMap() {
+            console.log('🗺️ Initializing map...');
+            
+            
+            map = L.map('map', {
+                zoomControl: true,
+                attributionControl: true,
+                dragging: true,
+                tap: true,
+                touchZoom: true,
+                scrollWheelZoom: true,
+                doubleClickZoom: true,
+                boxZoom: true,
+                keyboard: true
+            }).setView([50.9375, 6.9603], 13);
+            
+            console.log('✅ Map created with zoom controls');
+            console.log('📱 Touch zoom enabled:', map.options.touchZoom);
+            console.log('🖱️ Scroll wheel zoom enabled:', map.options.scrollWheelZoom);
+            console.log('🔍 Zoom level:', map.getZoom());
+            
+            // Move zoom control to top left (separate from locate button)
+            map.zoomControl.setPosition('topleft');
+            
+            // Tiles
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap',
+                maxZoom: 19
+            }).addTo(map);
+            
+            // Enable dragging after map loads
+            setTimeout(() => {
+                map.dragging.enable();
+            }, 100);
+            
+            // Add markers
+            MARKETS.forEach(market => {
+                const icon = L.divIcon({
+                    html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#e11d48" width="42" height="42" style="filter: drop-shadow(3px 3px 3px rgba(0,0,0,0.6));"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
+                    className: '',
+                    iconSize: [42, 42],
+                    iconAnchor: [21, 21]
+                });
+                
+                const marker = L.marker([market.lat, market.lon], { icon })
+                    .addTo(map)
+                    .bindPopup(createPopupContent(market), {
+                        maxWidth: 300,
+                        className: 'mobile-popup'
+                    });
+                
+                marker.on('click', () => selectMarket(market.id));
+                markers[market.id] = marker;
+            });
+            
+            renderMarketList();
+            fetchWeather();
+        }
+        
+        // Create Mobile-Optimized Popup
+        function createPopupContent(market) {
+            return `
+                <div class="w-full text-stone-200">
+                    <img src="${market.image}" alt="${market.name}" class="w-full h-40 object-cover rounded-t-lg" loading="lazy" />
+                    <div class="p-4">
+                        <h3 class="text-lg font-bold mb-2 text-amber-400" style="font-family: 'Cinzel', serif;">
+                            ${market.name}
+                        </h3>
+                        <p class="text-xs text-amber-300 mb-2">📍 ${market.stadtteil}</p>
+                        <p class="text-sm text-stone-300 mb-3">${market.desc}</p>
+                        <div class="text-xs text-stone-400 space-y-1">
+                            <p><strong>Adresse:</strong> ${market.ort}</p>
+                            <p><strong>Zeitraum:</strong> ${market.start} - ${market.end}</p>
+                            <p><strong>Öffnung:</strong> ${market.hours}</p>
+                        </div>
+                        ${market.website ? `<a href="${market.website}" target="_blank" rel="noopener" class="inline-block mt-3 text-xs text-amber-400 hover:text-amber-300 underline">→ Webseite</a>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Render Mobile-Optimized List
+        function renderMarketList() {
+            const listHtml = MARKETS.map(market => `
+                <div onclick="selectMarket(${market.id})"
+                     class="touch-target p-5 border-b border-black/20 active:bg-stone-700/70 transition-colors border-l-4 border-transparent"
+                     id="market-item-${market.id}"
+                     style="outline: 1px dashed cyan;">
+                    <h3 class="font-semibold text-lg text-stone-200">${market.name}</h3>
+                    <div class="text-sm text-stone-400 mt-1">
+                        <p>${market.ort}</p>
+                        <p class="text-xs mt-1">${market.start} - ${market.end}</p>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('marketList').innerHTML = listHtml;
+        }
+        
+        // Select Market
+        function selectMarket(id) {
+            selectedMarket = id;
+            const market = MARKETS.find(m => m.id === id);
+            
+            if (market) {
+                map.setView([market.lat, market.lon], 15);
+                setTimeout(() => markers[id].openPopup(), 300);
+                
+                // Update selection
+                document.querySelectorAll('[id^="market-item-"]').forEach(el => {
+                    el.classList.remove('bg-amber-900/40', 'border-amber-400');
+                    el.classList.add('border-transparent');
+                });
+                
+                const item = document.getElementById(`market-item-${id}`);
+                if (item) {
+                    item.classList.add('bg-amber-900/40', 'border-amber-400');
+                    item.classList.remove('border-transparent');
+                }
+                
+                // Close sidebar
+                sidebarExpanded = false;
+                updateSidebarState();
+            }
+        }
+        
+        // Toggle Sidebar
+        function toggleSidebar() {
+            sidebarExpanded = !sidebarExpanded;
+            updateSidebarState();
+        }
+        
+        function updateSidebarState() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('toggleIcon');
+            const hint = document.getElementById('sidebarHint');
+            
+            if (sidebarExpanded) {
+                sidebar.classList.remove('collapsed');
+                sidebar.classList.add('expanded');
+                icon.style.transform = 'rotate(180deg)';
+                hint.textContent = 'Tippen zum Schließen';
+            } else {
+                sidebar.classList.remove('expanded');
+                sidebar.classList.add('collapsed');
+                icon.style.transform = 'rotate(0deg)';
+                hint.textContent = 'Tippen zum Öffnen';
+            }
+        }
+        
+        // Locate User with Better Mobile Support
+        function locateUser() {
+            if (!navigator.geolocation) {
+                alert('Standortdienste werden nicht unterstützt');
+                return;
+            }
+            
+            const btn = event.target.closest('.locate-btn');
+            btn.innerHTML = '<div class="loading"></div>';
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    
+                    map.setView([lat, lon], 14);
+                    
+                    L.marker([lat, lon], {
+                        icon: L.divIcon({
+                            html: '<div style="width:20px;height:20px;background:#38bdf8;border:3px solid white;border-radius:50%;box-shadow:0 0 10px rgba(56,189,248,0.8);"></div>',
+                            className: '',
+                            iconSize: [20, 20]
+                        })
+                    }).addTo(map).bindPopup('Ihr Standort');
+                    
+                    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg>';
+                },
+                (error) => {
+                    alert('Standort konnte nicht ermittelt werden. Bitte Standortdienste in den Einstellungen aktivieren.');
+                    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg>';
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+        
+        // Fetch Weather
+        function fetchWeather() {
+            fetch('https://api.open-meteo.com/v1/forecast?latitude=50.94&longitude=6.96&current=temperature_2m,weather_code')
+                .then(res => res.json())
+                .then(data => {
+                    const temp = Math.round(data.current.temperature_2m);
+                    const icon = getWeatherIcon(data.current.weather_code);
+                    
+                    document.getElementById('weather').innerHTML = `
+                        <div class="flex items-center justify-between text-stone-300">
+                            <div class="flex items-center gap-3">
+                                <div class="text-4xl">${icon}</div>
+                                <div class="text-left">
+                                    <p class="font-bold text-base text-stone-200">Köln</p>
+                                    <p class="text-sm">${getWeatherDesc(data.current.weather_code)}</p>
+                                </div>
+                            </div>
+                            <div class="text-2xl font-bold text-amber-400" style="font-family: 'Cinzel', serif;">
+                                ${temp}°C
+                            </div>
+                        </div>
+                    `;
+                })
+                .catch(() => {
+                    document.getElementById('weather').innerHTML = '<p class="text-rose-400 text-sm">Wetter nicht verfügbar</p>';
+                });
+        }
+        
+        function getWeatherIcon(code) {
+            if (code === 0) return '☀️';
+            if (code < 4) return '⛅';
+            if (code < 50) return '☁️';
+            if (code < 70) return '🌧️';
+            if (code < 80) return '❄️';
+            return '⛈️';
+        }
+        
+        function getWeatherDesc(code) {
+            if (code === 0) return 'Klar';
+            if (code < 4) return 'Teilweise bewölkt';
+            if (code < 50) return 'Nebel';
+            if (code < 70) return 'Regen';
+            if (code < 80) return 'Schnee';
+            return 'Gewitter';
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', initMap);
+        
+        // Handle Orientation Changes
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 100);
+        });
+        
+        // Handle Resize
+        window.addEventListener('resize', () => {
+            map.invalidateSize();
+        });
+    </script>
+</body>
+</html>
