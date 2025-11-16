@@ -1,0 +1,1175 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-turbo",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2025-11-15T21:18:02Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/25503144",
+        "amenity": "fire_station",
+        "emergency": "ambulance_station",
+        "name": "Feuer- und Rettungswache 9 Köln-Buchheim",
+        "ref": "BF9",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.0207157,
+          50.9651286
+        ]
+      },
+      "id": "way/25503144"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/27010589",
+        "amenity": "fire_station",
+        "name": "Flughafen Feuerwehr Köln",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.1363547,
+          50.868044
+        ]
+      },
+      "id": "way/27010589"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/30966021",
+        "amenity": "fire_station",
+        "building": "fire_station",
+        "height": "6",
+        "name": "Werkfeuerwehr Ford Köln-Niehl",
+        "operator": "Ford-Werke GmbH Köln-Niehl",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9566448,
+          51.0078373
+        ]
+      },
+      "id": "way/30966021"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/54267823",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housenumber": "50",
+        "addr:postcode": "50739",
+        "addr:street": "Robert-Perthel-Straße",
+        "amenity": "fire_station",
+        "building": "yes",
+        "building:use": "civic",
+        "name": "Katastrophenschutzzentrum",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9135434,
+          50.984776
+        ]
+      },
+      "id": "way/54267823"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/99423916",
+        "amenity": "fire_station",
+        "building": "yes",
+        "building:colour": "grey",
+        "building:levels": "2",
+        "description": "Gebäude 24",
+        "email": "feuerwehr@uk-koeln.de",
+        "name": "Feuerwehr Uniklinik Köln",
+        "opening_hours": "24/7",
+        "phone": "+49 221 47898001",
+        "ref": "24",
+        "website": "https://www.uk-koeln.de/",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9150905,
+          50.9249505
+        ]
+      },
+      "id": "way/99423916"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/121611447",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housenumber": "36",
+        "addr:postcode": "50996",
+        "addr:street": "Schillingsrotter Straße",
+        "amenity": "fire_station",
+        "building": "yes",
+        "building:use": "civic",
+        "name": "Freiwillige Feuerwehr Köln Löschgruppe Rodenkirchen",
+        "operator": "Stadt Köln",
+        "ref": "FF Rodenkirchen",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9918873,
+          50.8895785
+        ]
+      },
+      "id": "way/121611447"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/148002837",
+        "amenity": "fire_station",
+        "building": "yes",
+        "name": "Flughafenfeuerwehr",
+        "operator": "Bundeswehr",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.1214647,
+          50.8618464
+        ]
+      },
+      "id": "way/148002837"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/151183091",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housenumber": "9",
+        "addr:postcode": "51149",
+        "addr:street": "Annastraße",
+        "amenity": "fire_station",
+        "building": "yes",
+        "building:levels": "2",
+        "building:use": "public;residential",
+        "name": "Freiwillige Feuerwehr Köln - Löschgruppe Ensen-Westhoven",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.0378501,
+          50.8985167
+        ]
+      },
+      "id": "way/151183091"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/151898102",
+        "amenity": "fire_station",
+        "building": "yes",
+        "name": "Freiwillige Feuerwehr Strunden",
+        "ref": "FF Struden",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.0909217,
+          50.970684
+        ]
+      },
+      "id": "way/151898102"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/151898159",
+        "amenity": "fire_station",
+        "building": "yes",
+        "name:signed": "no",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.8585399,
+          51.0132184
+        ]
+      },
+      "id": "way/151898159"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/153321128",
+        "addr:city": "Köln",
+        "addr:housenumber": "46",
+        "addr:postcode": "51067",
+        "addr:street": "Buschfeldstraße",
+        "amenity": "fire_station",
+        "building": "yes",
+        "building:levels": "2",
+        "building:material": "wood",
+        "height": "10",
+        "name": "Löschgruppe Holweide",
+        "operator": "Stadt Köln",
+        "ref": "FF HO",
+        "roof:height": "2",
+        "roof:shape": "gabled",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.0395926,
+          50.971094
+        ]
+      },
+      "id": "way/153321128"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/187012080",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housename": "Feuer- und Rettungswache 14",
+        "addr:housenumber": "26-32",
+        "addr:postcode": "50859",
+        "addr:street": "Richard-Wagner-Straße",
+        "amenity": "fire_station",
+        "building": "fire_station",
+        "building:use": "civic",
+        "check_date": "2025-08-23",
+        "emergency": "ambulance_station",
+        "name": "Feuer- und Rettungswache 14 Lövenich",
+        "ref": "BF14",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.8307957,
+          50.9421666
+        ]
+      },
+      "id": "way/187012080"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/205075292",
+        "amenity": "fire_station",
+        "building": "fire_station",
+        "building:colour": "white",
+        "building:levels": "1",
+        "height": "5",
+        "name": "Gebäudebrandschutzwache",
+        "roof:colour": "grey",
+        "roof:shape": "flat",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.1152987,
+          50.8828509
+        ]
+      },
+      "id": "way/205075292"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/218534558",
+        "amenity": "fire_station",
+        "building": "yes",
+        "check_date": "2024-03-19",
+        "name": "Freiwillige Feuerwehr Köln - Löschgruppe Lövenich",
+        "ref": "FF Lövenich",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.8302262,
+          50.9420189
+        ]
+      },
+      "id": "way/218534558"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/245510676",
+        "amenity": "fire_station",
+        "building": "yes",
+        "name": "Freiwillige Feuerwehr Köln - Löschgruppe Widdersdorf",
+        "ref": "FF Widdersdorf",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.8357794,
+          50.965879
+        ]
+      },
+      "id": "way/245510676"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/249759178",
+        "addr:housenumber": "45",
+        "addr:street": "Hackenbroicher Straße",
+        "amenity": "fire_station",
+        "name": "Freiwillige Feuerwehr Köln Löschgruppe Worringen",
+        "source": "survey"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.86109,
+          51.0651715
+        ]
+      },
+      "id": "node/249759178"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/258643733",
+        "amenity": "fire_station",
+        "check_date": "2025-08-05",
+        "name": "Werksfeuerwehr",
+        "operator": "Deutz AG",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.0097287,
+          50.9359839
+        ]
+      },
+      "id": "way/258643733"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/260317502",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housenumber": "56;58;60",
+        "addr:postcode": "50739",
+        "addr:street": "Hugo-Junkers-Straße",
+        "amenity": "fire_station",
+        "building": "yes",
+        "building:use": "industrial",
+        "name": "Freiwillige Feuerwehr Köln Löschgruppe Longerich",
+        "ref": "FF Longerich",
+        "short_name": "FF LO",
+        "website": "https://www.ff-longerich.de/",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.908195,
+          50.9915122
+        ]
+      },
+      "id": "way/260317502"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/277661363",
+        "amenity": "fire_station",
+        "building": "yes",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9845807,
+          50.8553818
+        ]
+      },
+      "id": "way/277661363"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/280114197",
+        "amenity": "fire_station",
+        "building": "yes",
+        "building:levels": "1",
+        "name": "Löschgruppe Heumar",
+        "operator": "Freiwillige Feuerwehr Köln",
+        "ref": "FF Rath-Heumar",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.0844654,
+          50.9165499
+        ]
+      },
+      "id": "way/280114197"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/282956161",
+        "addr:city": "Köln",
+        "addr:housenumber": "8-12",
+        "addr:postcode": "50968",
+        "addr:street": "Schillingsrotter Weg",
+        "amenity": "fire_station",
+        "emergency": "ambulance_station",
+        "name": "Feuer- und Rettungswache 2 - Marienburg",
+        "ref": "FW 2",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9732993,
+          50.8936224
+        ]
+      },
+      "id": "way/282956161"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/295605330",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housenumber": "7",
+        "addr:postcode": "50769",
+        "addr:street": "Schmiedhofsweg",
+        "amenity": "fire_station",
+        "building": "yes",
+        "building:levels": "1",
+        "name": "Löschgruppe Fühlingen",
+        "operator": "Freiwillige Feuerwehr Köln",
+        "source": "NRW Atlas:ALK",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9046382,
+          51.0362107
+        ]
+      },
+      "id": "way/295605330"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/303290605",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housenumber": "66",
+        "addr:postcode": "50769",
+        "addr:street": "Causemannstraße",
+        "amenity": "fire_station",
+        "building": "warehouse",
+        "building:use": "storage",
+        "name": "Freiwillige Feuerwehr Köln Löschgruppe Merkenich",
+        "ref": "FF Merkenich",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9484865,
+          51.0227147
+        ]
+      },
+      "id": "way/303290605"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/314190549",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housenumber": "60",
+        "addr:postcode": "50769",
+        "addr:street": "St.-Tönnis-Straße",
+        "amenity": "fire_station",
+        "building:use": "residential",
+        "demolished:building": "house",
+        "name": "Rettungswache Worringen",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.8622213,
+          51.0629045
+        ]
+      },
+      "id": "way/314190549"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/322332091",
+        "amenity": "fire_station",
+        "building": "yes",
+        "name": "Feuerwache WF Ford Köln-Merkenich",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9378485,
+          51.0278109
+        ]
+      },
+      "id": "way/322332091"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/330712566",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housenumber": "30",
+        "addr:postcode": "51069",
+        "addr:street": "Rönsahler Straße",
+        "amenity": "fire_station",
+        "building": "yes",
+        "building:levels": "2",
+        "contact:website": "https://feuerwehr-duennwald.de",
+        "name": "Löschgruppe Dünnwald",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.0357595,
+          51.002118
+        ]
+      },
+      "id": "way/330712566"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/335811966",
+        "addr:housenumber": "66",
+        "addr:street": "Edelhofstraße",
+        "amenity": "fire_station",
+        "check_date": "2024-03-15",
+        "name": "Freiwillige Feuerwehr Köln – Löschgruppe Flittard",
+        "ref": "FF Flittard",
+        "website": "https://www.feuerwehr-flittard.de/",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9809998,
+          50.9973368
+        ]
+      },
+      "id": "way/335811966"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/348774833",
+        "addr:city": "Köln",
+        "addr:housenumber": "38-42",
+        "addr:postcode": "51109",
+        "addr:street": "Hovenstraße",
+        "amenity": "fire_station",
+        "building": "yes",
+        "building:levels": "1",
+        "designation": "Freiwillige Feuerwehr Köln Löschgruppe Brück",
+        "name": "Löschgruppe Brück",
+        "operator": "Freiwillige Feuerwehr Köln",
+        "ref": "FF Brück",
+        "roof:shape": "flat",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.0812833,
+          50.9439858
+        ]
+      },
+      "id": "way/348774833"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/472375802",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housenumber": "33",
+        "addr:postcode": "50679",
+        "addr:street": "Gummersbacher Straße",
+        "amenity": "fire_station",
+        "check_date": "2025-11-09",
+        "emergency": "ambulance_station",
+        "loc_name": "Feuerwehrzentrum Kalk",
+        "name": "Feuer- und Rettungswache 10 Köln-Deutz",
+        "operator": "Stadt Köln",
+        "ref": "FW 10",
+        "wikidata": "Q106223295",
+        "wikimedia_commons": "Category:Feuerwehrzentrum Kalk",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9894714,
+          50.9396446
+        ]
+      },
+      "id": "way/472375802"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/823402645",
+        "amenity": "fire_station",
+        "contact:facebook": "Feuerwehr.Dellbrueck",
+        "name": "Freiwillige Feuerwehr Dellbrück",
+        "operator": "Stadt Köln",
+        "short_name": "FF Dellbrück",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.0651223,
+          50.9783526
+        ]
+      },
+      "id": "way/823402645"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/848203709",
+        "amenity": "fire_station",
+        "check_date": "2025-07-29",
+        "emergency": "ambulance_station",
+        "name": "Feuer- und Rettungswache 7 Köln-Porz",
+        "ref": "BF7",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.0722844,
+          50.8808783
+        ]
+      },
+      "id": "way/848203709"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/848590306",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housenumber": "179",
+        "addr:postcode": "51147",
+        "addr:street": "Heidestraße",
+        "addr:suburb": "Wahnheide",
+        "amenity": "fire_station",
+        "name": "Freiwillige Feuerwehr Köln Löschgruppe Wahn-Heide-Lind",
+        "ref": "FF Wahn",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.1004565,
+          50.8591471
+        ]
+      },
+      "id": "way/848590306"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/866995967",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housenumber": "184",
+        "addr:postcode": "50765",
+        "addr:street": "Volkhovener Weg",
+        "amenity": "fire_station",
+        "emergency": "ambulance_station",
+        "name": "Feuer- und Rettungswache 6 Köln-Chorweiler",
+        "operator": "Stadt Köln",
+        "ref": "FW 6",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.8925493,
+          51.0167059
+        ]
+      },
+      "id": "way/866995967"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/879335519",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housenumber": "10",
+        "addr:postcode": "51143",
+        "addr:street": "Hintergasse",
+        "addr:suburb": "Langel",
+        "amenity": "fire_station",
+        "check_date": "2024-07-02",
+        "name": "Freiwillige Feuerwehr Köln - Löschgruppe Porz-Langel",
+        "ref": "FF Porz - Langel",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.0062269,
+          50.8451529
+        ]
+      },
+      "id": "way/879335519"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/880342316",
+        "addr:city": "Köln",
+        "addr:housenumber": "19",
+        "addr:postcode": "51143",
+        "addr:street": "Unterm Berg",
+        "amenity": "fire_station",
+        "check_date": "2025-07-28",
+        "name": "Freiwillige Feuerwehr Köln - Löschgruppe Zündorf",
+        "ref": "Rettungswache 17 Stadt Köln Berufsfeuerwehr Zündorf",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.0309113,
+          50.8613549
+        ]
+      },
+      "id": "way/880342316"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/887045790",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housenumber": "18",
+        "addr:postcode": "50676",
+        "addr:street": "Agrippastraße",
+        "addr:suburb": "Altstadt-Süd",
+        "amenity": "fire_station",
+        "emergency": "ambulance_station",
+        "name": "Feuer- und Rettungswache 1 Köln-Innenstadt",
+        "ref": "FW 1",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9538844,
+          50.9337545
+        ]
+      },
+      "id": "way/887045790"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/887057824",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housenumber": "221-225",
+        "addr:postcode": "50935",
+        "addr:street": "Gleueler Straße",
+        "addr:suburb": "Lindenthal",
+        "amenity": "fire_station",
+        "emergency": "ambulance_station",
+        "name": "Feuer- und Rettungswache 3 Köln-Lindenthal",
+        "ref": "BF3",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9087617,
+          50.9226017
+        ]
+      },
+      "id": "way/887057824"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/887484183",
+        "amenity": "fire_station",
+        "check_date": "2025-10-20",
+        "emergency": "ambulance_station",
+        "name": "Feuer- und Rettungswache 4 Köln-Ehrenfeld",
+        "ref": "BF4",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9029228,
+          50.9574714
+        ]
+      },
+      "id": "way/887484183"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/892358640",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housenumber": "13",
+        "addr:postcode": "50737",
+        "addr:street": "Scheibenstraße",
+        "amenity": "fire_station",
+        "operator": "Stadt Köln",
+        "ref": "FW 5",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9483955,
+          50.9859297
+        ]
+      },
+      "id": "way/892358640"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/892636009",
+        "amenity": "fire_station",
+        "emergency": "ambulance_station",
+        "name": "Feuer- und Rettungswache 8 Köln-Ostheim",
+        "operator": "Stadt Köln",
+        "ref": "FW 8",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.0482795,
+          50.9250483
+        ]
+      },
+      "id": "way/892636009"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/892715267",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housenumber": "1",
+        "addr:postcode": "50679",
+        "addr:street": "Alfred-Schütte-Allee",
+        "amenity": "fire_station",
+        "check_date": "2024-07-20",
+        "contact:website": "http://www.flb-koeln.de",
+        "name": "Feuerlöschboot Köln",
+        "operator": "Stadt Köln",
+        "ref": "FLB",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9724696,
+          50.9278889
+        ]
+      },
+      "id": "way/892715267"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/905073651",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housenumber": "4",
+        "addr:postcode": "50765",
+        "addr:street": "Weilerstraße",
+        "amenity": "fire_station",
+        "name:signed": "no",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.8586111,
+          51.0131731
+        ]
+      },
+      "id": "way/905073651"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/928192831",
+        "amenity": "fire_station",
+        "name": "Feuerlöschboot Chempark"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.8567975,
+          51.0737588
+        ]
+      },
+      "id": "node/928192831"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/958787385",
+        "amenity": "fire_station",
+        "name": "Löschgruppe Fühlingen",
+        "ref": "FF Fühlingen",
+        "@geometry": "center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.8834074,
+          51.019318
+        ]
+      },
+      "id": "way/958787385"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1259220003",
+        "amenity": "fire_station",
+        "name": "Werkfeuerwehr"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.8295442,
+          51.0721613
+        ]
+      },
+      "id": "node/1259220003"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1562490471",
+        "amenity": "fire_station",
+        "name": "Freiwillige Feuerwehr Eil",
+        "official_name": "Freiwillige Feuerwehr Köln - Löschgruppe Eil",
+        "ref": "FF Eil",
+        "short_name": "Löschgruppe Eil",
+        "website": "https://ff-eil.de/"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.0735957,
+          50.8968215
+        ]
+      },
+      "id": "node/1562490471"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1581347624",
+        "amenity": "fire_station",
+        "name": "Freiwillige Feuerwehr Köln Löschgruppe Langel-Rheinkassel",
+        "ref": "FF Langel - Rheinkassel"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9323863,
+          51.0418788
+        ]
+      },
+      "id": "node/1581347624"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1836458286",
+        "addr:city": "Köln",
+        "addr:housenumber": "40",
+        "addr:postcode": "50739",
+        "addr:street": "Osterather Straße",
+        "addr:suburb": "Nippes",
+        "amenity": "fire_station",
+        "name": "Freiwillige Feuerwehr Umweltschutzdienst",
+        "ref": "FF Umweltschutzdienst",
+        "short_name": "FF USD",
+        "website": "https://www.usd-koeln.de/"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9360195,
+          50.9605082
+        ]
+      },
+      "id": "node/1836458286"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4111478189",
+        "addr:housenumber": "36a",
+        "addr:street": "Quettinghofstraße",
+        "amenity": "fire_station",
+        "name": "Freiwillige Feuerwehr Löschgruppe Roggendorf/Thenhoven",
+        "website": "https://www.lg-roggendorf.de/"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.8486646,
+          51.0470887
+        ]
+      },
+      "id": "node/4111478189"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6288173432",
+        "addr:city": "Köln",
+        "addr:housenumber": "10",
+        "addr:postcode": "50735",
+        "addr:street": "Boltensternstraße",
+        "amenity": "fire_station",
+        "description": "Hauptverwaltung",
+        "name": "Berufsfeuerwehr Köln",
+        "operator": "Stadt Köln",
+        "phone": "+49 221 9748 0",
+        "website": "https://www.stadt-koeln.de/service/adressen/berufsfeuerwehr-amt-fuer-feuerschutz-rettungsdienst-und-bevo"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9839903,
+          50.9649029
+        ]
+      },
+      "id": "node/6288173432"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6612818953",
+        "amenity": "fire_station",
+        "check_date": "2025-06-02",
+        "name": "Freiwillige Feuerwehr Köln - Löschgruppe Kalk",
+        "ref": "LG KA"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.9895759,
+          50.9393797
+        ]
+      },
+      "id": "node/6612818953"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/7920289731",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housenumber": "69",
+        "addr:postcode": "51145",
+        "addr:street": "Kaiserstraße",
+        "amenity": "fire_station",
+        "name": "Freiwillige Feuerwehr Köln Löschgruppe Urbach-Elsdorf-Grengel"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.0725255,
+          50.8808369
+        ]
+      },
+      "id": "node/7920289731"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/8484130114",
+        "addr:city": "Köln",
+        "addr:country": "DE",
+        "addr:housenumber": "34",
+        "addr:postcode": "51147",
+        "addr:street": "Margaretenstraße",
+        "addr:suburb": "Libur",
+        "amenity": "fire_station",
+        "name": "Freiwillige Feuerwehr Köln Löschgruppe Libur"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.0730156,
+          50.8386926
+        ]
+      },
+      "id": "node/8484130114"
+    }
+  ]
+}
