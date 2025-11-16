@@ -1,3 +1,7 @@
+<img width="1544" height="890" alt="image" src="https://github.com/user-attachments/assets/f22d0ebc-4525-40bc-99b7-3290a2becb6d" />
+
+
+
 # Day 15 – Fire: Cologne Fire Stations Map
 
 Interactive web map showing fire stations in Cologne (Köln) and their approximate response zones for the **#30DayMapChallenge 2025 – Day 15 (Fire)**.
