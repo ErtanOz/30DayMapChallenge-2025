@@ -21,7 +21,7 @@
 | 14 | OSM Challenge |  | |
 | 15 | Fire | | |
 | 16 | Cells |  | |
-| 17 | New Tool |  | |
+| 17 | New Tool | 𝐖𝐢𝐤𝐢𝐝𝐚𝐭𝐚 𝐐𝐮𝐞𝐫𝐲 ( 𝐂𝐨𝐥𝐨𝐠𝐧𝐞’𝐬 𝐦𝐨𝐧𝐮𝐦𝐞𝐧𝐭𝐬)/ 𝐎𝐒𝐌 𝐐𝐮𝐞𝐫𝐲 (𝐩𝐥𝐚𝐲𝐠𝐫𝐨𝐮𝐧𝐝𝐬 𝐢𝐧 𝐂𝐨𝐥𝐨𝐠𝐧𝐞)|  https://w.wiki/GCPc / https://lnkd.in/eMgN5YgZ |
 | 18 | Out-of-World |  | |
 | 19 | Projection |  | |
 | 20 | Water |  | |
