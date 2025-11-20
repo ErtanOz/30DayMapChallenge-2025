@@ -1,6 +1,25 @@
 
 
 
+
+[out:json][timeout:60];
+
+// 1. Bounding box for Köln (approx)
+{{geocodeArea:Köln}}->.searchArea;
+
+// 2. Select all playground features in this area
+(
+  node["leisure"="playground"](area.searchArea);
+  way["leisure"="playground"](area.searchArea);
+  relation["leisure"="playground"](area.searchArea);
+);
+
+// 3. Return result as GeoJSON-ready data
+out body;
+>;
+out skel qt;
+
+
 #Wikidata Script: 
 
 SELECT ?monument ?monumentLabel ?location ?locationLabel ?image ?coord WHERE {
