@@ -1,7 +1,7 @@
 <img width="1916" height="1027" alt="image" src="https://github.com/user-attachments/assets/b687fb80-23d2-4445-ab1c-6a0d9daf0ca1" />
 
 
-# Day 20, Water, Cologne Flood Risk Simulation
+# Day 20: Water, Cologne Flood Risk Simulation
 
 This folder is part of the **#30DayMapChallenge2025** series.  
 It contains a small experimental web app that simulates potential flood scenarios for the River Rhine in Cologne.
