@@ -24,7 +24,7 @@
 | 17 | New Tool | 𝐖𝐢𝐤𝐢𝐝𝐚𝐭𝐚 𝐐𝐮𝐞𝐫𝐲 ( 𝐂𝐨𝐥𝐨𝐠𝐧𝐞’𝐬 𝐦𝐨𝐧𝐮𝐦𝐞𝐧𝐭𝐬)/ 𝐎𝐒𝐌 𝐐𝐮𝐞𝐫𝐲 (𝐩𝐥𝐚𝐲𝐠𝐫𝐨𝐮𝐧𝐝𝐬 𝐢𝐧 𝐂𝐨𝐥𝐨𝐠𝐧𝐞)|  https://w.wiki/GCPc / https://lnkd.in/eMgN5YgZ |
 | 18 | Out-of-World |  | |
 | 19 | Projection |  | |
-| 20 | Water |  | |
+| 20 | Water | 𝐂𝐨𝐥𝐨𝐠𝐧𝐞 𝐅𝐥𝐨𝐨𝐝 𝐑𝐢𝐬𝐤 𝐒𝐢𝐦𝐮𝐥𝐚𝐭𝐢𝐨𝐧 (predictive GeoAI) | https://helpful-pastelito-4c8351.netlify.app/|
 | 21 | Icons |  | |
 | 22 | Data Challenge |  | |
 | 23 | Process |  | |
