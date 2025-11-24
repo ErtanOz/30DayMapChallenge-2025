@@ -19,7 +19,7 @@
 | 12 | Future | Köln 2125 Stadt der Zukunft|https://www.youtube.com/watch?v=kJC5pk3OGp8&t=20s |
 | 13 | 10-minute |🎄 𝗞ö𝗹𝗻 𝗪𝗲𝗶𝗵𝗻𝗮𝗰𝗵𝘁𝘀𝗺𝗮𝗿𝗸𝘁 𝗠𝗮𝗽 (𝗖𝗼𝗹𝗼𝗴𝗻𝗲 𝗖𝗵𝗿𝗶𝘀𝘁𝗺𝗮𝘀 𝗠𝗮𝗿𝗸𝗲𝘁 𝗠𝗮𝗽 ) | https://ertanoz.github.io/30DayMapChallenge-2025/Day_13_10_minutes_Map/Day_13_10minutesMap_Mobile.html|
 | 14 | OSM Challenge |  | |
-| 15 | Fire | | |
+| 15 | Fire |𝗖𝗼𝗹𝗼𝗴𝗻𝗲 𝗙𝗶𝗿𝗲 𝗗𝗲𝗽𝗮𝗿𝘁𝗺𝗲𝗻𝘁 (𝗙𝗲𝘂𝗲𝗿𝘄𝗲𝗵𝗿 𝗞ö𝗹𝗻!) | https://ertanoz.github.io/30DayMapChallenge-2025/Day_15_Fire/fire_map_koeln.html|
 | 16 | Cells |  | |
 | 17 | New Tool | 𝐖𝐢𝐤𝐢𝐝𝐚𝐭𝐚 𝐐𝐮𝐞𝐫𝐲 ( 𝐂𝐨𝐥𝐨𝐠𝐧𝐞’𝐬 𝐦𝐨𝐧𝐮𝐦𝐞𝐧𝐭𝐬)/ 𝐎𝐒𝐌 𝐐𝐮𝐞𝐫𝐲 (𝐩𝐥𝐚𝐲𝐠𝐫𝐨𝐮𝐧𝐝𝐬 𝐢𝐧 𝐂𝐨𝐥𝐨𝐠𝐧𝐞)|  https://w.wiki/GCPc / https://lnkd.in/eMgN5YgZ |
 | 18 | Out-of-World |  | |
