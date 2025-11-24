@@ -1,0 +1,5 @@
+{
+  "name": "Cologne Flood Simulator",
+  "description": "An interactive map simulating Rhine river flood levels in Cologne with real-time AI situation analysis using Gemini.",
+  "requestFramePermissions": []
+}
