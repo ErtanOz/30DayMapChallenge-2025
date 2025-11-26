@@ -1,13 +1,13 @@
 
 <img width="1372" height="915" alt="Screenshot 2025-11-26 150641" src="https://github.com/user-attachments/assets/fb3348d4-69d0-437c-973d-9893a72b0847" />
 
-🚚 Cologne Transportation Navigator (Agrippa Logistic)
+🚚 #Cologne Transportation Navigator (Agrippa Logistic)
 
 A GeoAI‑powered WebMap for vehicle‑aware navigation in narrow historic streets of Cologne.
 
 This project blends classic GIS, OpenStreetMap data, and modern GeoAI techniques to support urban logistics, routing, and spatial decision‑making in complex environments.
 
-🌍 Project Overview
+🌍 #Project Overview
 
 Historic cities like Cologne have tight medieval streets that make truck navigation difficult. This WebMap helps drivers and planners by combining:
 
@@ -21,7 +21,7 @@ AI‑driven geospatial reasoning
 
 It was originally created as part of the #30DayMapChallenge2025 – Day 26 (Transportation).
 
-🤖 GeoAI Capabilities (Core Innovation)
+🤖 #GeoAI Capabilities (Core Innovation)
 
 This WebMap goes beyond traditional GIS and integrates GeoAI for smart geospatial reasoning:
 
@@ -39,7 +39,7 @@ The AI generates a simplified congestionCurve showing how traffic might evolve o
 
 The app fetches real‑time text from the web (news, traffic reports) and summarizes it for the selected area.
 
-🗺️ Geospatial Techniques Used
+🗺️ #Geospatial Techniques Used
 1. Geocoding & Reverse Geocoding
 
 Forward: Convert street names (e.g., Severinstraße) → coordinates (Nominatim).
@@ -64,7 +64,7 @@ Vector overlays for markers, routes, street segments.
 
 Thematic styling (green = suitable, red = unsuitable).
 
-🔍 Mini‑List: Core GeoAI Intelligence
+🔍 #Mini‑List: Core GeoAI Intelligence
 
 Contextual road suitability analysis
 
@@ -76,7 +76,7 @@ Smart geocoding, routing & proximity analytics
 
 Thematic GIS visualization guided by AI insights
 
-🛠️ Tech Stack
+🛠️ #Tech Stack
 
 Frontend: React / TypeScript
 
@@ -92,7 +92,7 @@ Vector Queries: Overpass API
 
 GeoAI: Gemini LLM (contextual + predictive reasoning)
 
-📦 Installation
+📦 #Installation
 git clone <your-repo-url>
 cd cologne-transportation-navigator
 npm install
@@ -100,10 +100,10 @@ npm run dev
 
 Open http://localhost:3000
 
-📬 Contact
+📬 #Contact
 
 To access the interactive map online, send me a message — I’ll share the link privately.
 
-🏷️ Tags
+🏷️ #Tags
 
 #GIS #GeoAI #UrbanLogistics #SmartCity #OSM #Mapping #Transportation #Cologne #OpenData
