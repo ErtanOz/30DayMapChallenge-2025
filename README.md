@@ -13,7 +13,7 @@
 | 6 | Dimensions | 3D Cologne CityMap |https://690d13938529e73f66cec26d--sprightly-flan-78c1e0.netlify.app/leaflet_3_d_buildings_cologne_html.html |
 | 7 | Accessibility | Cologne Public Transport Network| https://ertanoz.github.io/30DayMapChallenge-2025/Day_7_Accessibility/maps/day07_cologne.html|
 | 8 | Urban | Cologne_building_age_map |https://ertanoz.github.io/30DayMapChallenge-2025/Day_8_Urban/Day_8_Urban_cologne_building_age_map.html |
-| 9 | Analog | | |
+| 9 | Analog | 𝗔 𝗰𝗶𝘁𝘆 𝗺𝗮𝗽 𝗳𝗼𝗿 𝗺𝗲𝗻 | https:/https://github.com/ErtanOz/30DayMapChallenge-2025/tree/main/Day_9_Analog - www.koelnisches-stadtmuseum.de/ |
 | 10 | Air | 𝗖𝗼𝗹𝗼𝗴𝗻𝗲 𝗔𝗶𝗿 𝗤𝘂𝗮𝗹𝗶𝘁𝘆 𝗪𝗲𝗯𝗔𝗽𝗽 (𝘄𝗶𝘁𝗵 𝗔𝗜 𝗔𝘀𝘀𝗶𝘀𝘁𝗮𝗻𝘁)| https://glowing-taffy-f007fa.netlify.app/|
 | 11 | Minimal | | |
 | 12 | Future | Köln 2125 Stadt der Zukunft|https://www.youtube.com/watch?v=kJC5pk3OGp8&t=20s |
