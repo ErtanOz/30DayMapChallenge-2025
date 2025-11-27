@@ -30,7 +30,7 @@
 | 23 | Process |  | |
 | 24 | Names |  | |
 | 25 | Hexagons |  | |
-| 26 | Transport | | |
+| 26 | Transport | 𝗖𝗼𝗹𝗼𝗴𝗻𝗲 𝗧𝗿𝗮𝗻𝘀𝗽𝗼𝗿𝘁 𝗡𝗮𝘃𝗶𝗴𝗮𝘁𝗼𝗿 (𝗔𝗴𝗿𝗶𝗽𝗽𝗮 𝗟𝗼𝗴𝗶𝘀𝘁𝗶𝗰) | https://github.com/ErtanOz/30DayMapChallenge-2025/tree/main/Day_26_Transport|
 | 27 | Boundaries | | |
 | 28 | Black |  | |
 | 29 | Raster |  | |
