@@ -11,11 +11,11 @@ A mix of city map, directory and sociological field study, all printed on paper 
 In Cologne, this map appeared in 𝟭𝟭 𝗲𝗱𝗶𝘁𝗶𝗼𝗻𝘀, so the demand must have been… consistent.
 
 𝗔𝗻𝗱 𝗮 𝗿𝗲𝗰𝗼𝗺𝗺𝗲𝗻𝗱𝗮𝘁𝗶𝗼𝗻:
-With its recent reopening, the Cologne City Museum offers an exceptional and modern concept for presenting urban history. A must-visit. 𝗦𝗽𝗲𝗰𝗶𝗮𝗹 𝘁𝗵𝗮𝗻𝗸𝘀 𝘁𝗼 Stefan Lewejohann Sascha Pries and other colleagues for the inspiration and the great conversations about Cologne’s urban history and the museum’s impressive new exhibition concept.
+With its recent reopening, the Cologne City Museum offers an exceptional and modern concept for presenting urban history. A must-visit. 𝗦𝗽𝗲𝗰𝗶𝗮𝗹 𝘁𝗵𝗮𝗻𝗸𝘀 𝘁𝗼 **Stefan Lewejohann Sascha Pries** and other colleagues for the inspiration and the great conversations about Cologne’s urban history and the museum’s impressive new exhibition concept.
 
 𝗔 𝗾𝘂𝗶𝗿𝗸𝘆 𝘆𝗲𝘁 𝗶𝗻𝘀𝗶𝗴𝗵𝘁𝗳𝘂𝗹 𝘁𝗶𝗺𝗲 𝗱𝗼𝗰𝘂𝗺𝗲𝗻𝘁 𝘁𝗵𝗮𝘁 𝘀𝗵𝗼𝘄𝘀 𝗵𝗼𝘄 𝗺𝘂𝗰𝗵 𝘂𝗿𝗯𝗮𝗻 𝗰𝘂𝗹𝘁𝘂𝗿𝗲, 𝘀𝗼𝗰𝗶𝗮𝗹 𝗻𝗼𝗿𝗺𝘀 𝗮𝗻𝗱 𝗰𝗶𝘁𝘆 𝗹𝗶𝗳𝗲 𝗵𝗮𝘃𝗲 𝗰𝗵𝗮𝗻𝗴𝗲𝗱.
 
-📸 𝗜𝗺𝗮𝗴𝗲 𝗿𝗶𝗴𝗵𝘁𝘀: Kölnisches Stadtmuseum, Stadt Köln https://lnkd.in/eStnyNJi
+📸 𝗜𝗺𝗮𝗴𝗲 𝗿𝗶𝗴𝗵𝘁𝘀: @Kölnisches Stadtmuseum, @Stadt Köln https://lnkd.in/eStnyNJi
 ℹ️ 𝗧𝗲𝘅𝘁 𝗦𝗼𝘂𝗿𝗰𝗲:: https://lnkd.in/eV7xy99d
 
 #30DayMapChallenge #30DayMapChallenge2025 #AnalogMaps #Cologne #Köln #CologneCityMuseum #KölnischesStadtMuseum #UrbanHistory #CityHistory #MuseumCulture #ExhibitionDesign #CulturalHeritage #HistoricalMaps #VintageMaps #UrbanCulture #MuseumLovers #HiddenHistory #CivicTech #GISCommunity #MuseumdienstKöln #StadtKöln #Kulturdaten  #UrbanIdentity #CulturalAwareness #Historiography #DiversityAndInclusion #CulturalReflection #ChangingCities #PublicHistory #CriticalUrbanism #ResponsibleStorytelling
