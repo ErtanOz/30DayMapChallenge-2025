@@ -20,8 +20,7 @@ With its recent reopening, the Cologne City Museum offers an exceptional and mod
 
 #30DayMapChallenge #30DayMapChallenge2025 #AnalogMaps #Cologne #Köln #CologneCityMuseum #KölnischesStadtMuseum #UrbanHistory #CityHistory #MuseumCulture #ExhibitionDesign #CulturalHeritage #HistoricalMaps #VintageMaps #UrbanCulture #MuseumLovers #HiddenHistory #CivicTech #GISCommunity #MuseumdienstKöln #StadtKöln #Kulturdaten  #UrbanIdentity #CulturalAwareness #Historiography #DiversityAndInclusion #CulturalReflection #ChangingCities #PublicHistory #CriticalUrbanism #ResponsibleStorytelling
 
-![255__1554249_lo](https://github.com/user-attachments/assets/c31f7c93-92d0-4dec-a0ce-dbbeebe19f47)
-
+![20241017_140919](https://github.com/user-attachments/assets/cdb925b9-e9e6-469d-9a6a-deaafefd98a6)
 
 <img width="704" height="578" alt="Screenshot 2025-11-27 224932" src="https://github.com/user-attachments/assets/be6a1c84-6b19-45cf-84c3-0eb576217215" />
 <img width="708" height="605" alt="Screenshot 2025-11-27 225022" src="https://github.com/user-attachments/assets/2460da3a-9adf-410a-b1f8-7397f0331bba" />
