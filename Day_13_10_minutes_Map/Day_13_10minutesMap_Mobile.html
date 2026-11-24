@@ -47,6 +47,7 @@
             overflow: hidden;
             font-family: 'EB Garamond', serif;
             position: fixed;
+            inset: 0;
             overscroll-behavior: none;
         }
 
@@ -167,6 +168,10 @@
         .leaflet-bottom { bottom: 84px; }
         .leaflet-popup-content { max-height: 58vh; overflow-y: auto; }
         @media (prefers-reduced-motion: reduce) { .snowflake { display: none; } .sidebar { transition: none; } }
+        #map { position: absolute; inset: 0; }
+        #sidebar { min-height: 0; }
+        #sidebar header, #sidebar > div:not(#marketList), #sidebar footer { flex-shrink: 0; }
+        #marketList { min-height: 0; }
         /* Mobile Sidebar */
         .sidebar {
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -251,7 +256,7 @@
     <div class="snowflake">❅</div>
 
     <!-- Main Container -->
-    <div class="h-screen w-screen flex flex-col bg-stone-900 text-stone-200 relative overflow-hidden">
+    <div class="h-screen w-screen flex flex-col bg-stone-900 text-stone-200 relative overflow-hidden" style="position:fixed;inset:0">
 
         <!-- Map Container -->
         <div class="flex-grow h-full w-full relative">
