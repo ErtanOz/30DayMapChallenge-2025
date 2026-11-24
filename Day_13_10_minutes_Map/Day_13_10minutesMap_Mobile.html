@@ -1,322 +1,76 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="Interaktive Karte recherchierter Weihnachtsmärkte in Köln 2026 - Mobile optimiert" />
-    <title>Kölner Weihnachtsmärkte 2026</title>
-
-    <!-- Mobile Optimizations -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Weihnachtsmärkte">
-    <meta name="theme-color" content="#1c1917">
-    <meta name="format-detection" content="telephone=no">
-
-    <!-- iOS Icon -->
-    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%231c1917' width='180' height='180'/><text x='90' y='120' font-size='100' text-anchor='middle' fill='%23facc15'>🎄</text></svg>">
-
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=EB+Garamond&display=swap" rel="stylesheet">
-
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
-    <style>
-        * {
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-        }
-
-        html, body, #root {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            font-family: 'EB Garamond', serif;
-            position: fixed;
-            inset: 0;
-            overscroll-behavior: none;
-        }
-
-        h1, h2, h3 {
-            font-family: 'Cinzel', serif;
-        }
-
-        .leaflet-container {
-            height: 100%;
-            width: 100%;
-            background-color: #f3f4f6;
-            touch-action: pan-x pan-y;
-        }
-
-        /* Mobile-optimized touch areas */
-        .touch-target {
-            min-height: 44px;
-            min-width: 44px;
-        }
-
-        /* Festive Popup Styling */
-        .leaflet-popup-content-wrapper {
-            background-color: #1c1917;
-            background-image: url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M12 2L12 22M2 12L22 12M5.636 5.636L18.364 18.364M5.636 18.364L18.364 5.636M12 6L14.121 8.121M12 6L9.879 8.121M12 18L14.121 15.879M12 18L9.879 15.879M18.364 12L15.879 9.879M18.364 12L15.879 14.121M5.636 12L8.121 9.879M5.636 12L8.121 14.121" stroke="rgba(250, 204, 21, 0.08)" stroke-width="1" fill="none"/%3E%3C/svg%3E');
-            color: #d6d3d1;
-            border-radius: 12px;
-            border: 2px solid #f59e0b;
-            box-shadow: 0 0 20px rgba(245, 158, 11, 0.6), 0 6px 15px rgba(0,0,0,0.7);
-            padding: 0;
-            max-width: 90vw;
-        }
-
-        .leaflet-popup-content {
-            margin: 0;
-            width: 100% !important;
-            max-width: 320px;
-        }
-
-        .leaflet-popup-tip {
-            background: #1c1917;
-        }
-
-        .leaflet-popup-close-button {
-            color: #facc15 !important;
-            padding: 8px !important;
-            font-size: 24px !important;
-            width: 44px;
-            height: 44px;
-            line-height: 1;
-        }
-
-        /* Locate Button - Mobile Optimized */
-        .locate-btn {
-            background-color: #292524;
-            border: 2px solid #facc15;
-            color: #facc15;
-            border-radius: 12px;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.8);
-            touch-action: manipulation;
-        }
-
-        .locate-btn:active {
-            transform: scale(0.95);
-            background-color: #44403c;
-        }
-
-        /* Zoom Controls - Mobile Optimized with High z-index */
-        .leaflet-control-zoom {
-            border: 2px solid #facc15 !important;
-            border-radius: 12px !important;
-            overflow: hidden !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.8) !important;
-            margin: 0 !important;
-            z-index: 2000 !important;
-            position: relative !important;
-        }
-
-        .leaflet-top.leaflet-left {
-            top: 16px !important;
-            left: 16px !important;
-            z-index: 2000 !important;
-        }
-
-        .leaflet-control-zoom a {
-            background-color: #292524 !important;
-            border: none !important;
-            color: #facc15 !important;
-            width: 46px !important;
-            height: 46px !important;
-            line-height: 46px !important;
-            font-size: 24px !important;
-            font-weight: bold !important;
-            text-align: center !important;
-            transition: all 0.2s ease !important;
-        }
-
-        .leaflet-control-zoom a:hover,
-        .leaflet-control-zoom a:active {
-            background-color: #44403c !important;
-            color: #fbbf24 !important;
-        }
-
-        .leaflet-control-zoom a:first-child {
-            border-bottom: 1px solid #57534e !important;
-        }
-
-        .leaflet-bar {
-            border: none !important;
-        }
-
-        .leaflet-control-attribution { max-width: calc(100vw - 16px); font: 11px/1.5 sans-serif; }
-        .leaflet-bottom { bottom: 84px; }
-        .leaflet-popup-content { max-height: 58vh; overflow-y: auto; }
-        @media (prefers-reduced-motion: reduce) { .snowflake { display: none; } .sidebar { transition: none; } }
-        #map { position: absolute; inset: 0; }
-        #sidebar { min-height: 0; }
-        #sidebar header, #sidebar > div:not(#marketList), #sidebar footer { flex-shrink: 0; }
-        #marketList { min-height: 0; }
-        /* Mobile Sidebar */
-        .sidebar {
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            will-change: transform;
-        }
-
-        .sidebar.collapsed {
-            transform: translateY(calc(100% - 80px));
-        }
-
-        .sidebar.expanded {
-            transform: translateY(0);
-        }
-
-        /* Smooth Scrolling */
-        .scroll-container {
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
-        }
-
-        /* Snowfall - Reduced for Mobile Performance */
-        .snowflake {
-            color: #fff;
-            font-size: 1em;
-            text-shadow: 0 0 5px #000;
-            position: absolute;
-            top: -10%;
-            z-index: 9999;
-            user-select: none;
-            pointer-events: none;
-            animation: snowfall 10s linear infinite, shake 3s ease-in-out infinite;
-        }
-
-        @keyframes snowfall {
-            0% { top: -10%; }
-            100% { top: 100%; }
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            50% { transform: translateX(40px); }
-        }
-
-        .snowflake:nth-of-type(1) { left: 10%; animation-delay: 0s; }
-        .snowflake:nth-of-type(2) { left: 30%; animation-delay: 2s; }
-        .snowflake:nth-of-type(3) { left: 50%; animation-delay: 4s; }
-        .snowflake:nth-of-type(4) { left: 70%; animation-delay: 1s; }
-        .snowflake:nth-of-type(5) { left: 90%; animation-delay: 3s; }
-
-        /* Loading Indicator */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #facc15;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Safe Areas for iOS Notch */
-        @supports (padding: max(0px)) {
-            .safe-top {
-                padding-top: max(16px, env(safe-area-inset-top));
-            }
-            .safe-bottom {
-                padding-bottom: max(16px, env(safe-area-inset-bottom));
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101e2b">
+<meta name="description" content="Köln im Lichterglanz: Entdecke die Weihnachtsmärkte 2026 auf einer winterlichen Karte mit Suche und persönlichen Lieblingsorten.">
+<title>Köln im Lichterglanz · Weihnachtsmärkte 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<style>
+:root{--ink:#101e2b;--panel:#142634;--line:#304451;--gold:#f3ce83;--white:#faf6ee;--muted:#b3c2cb;--red:#c55a52;--radius:18px;color-scheme:dark}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;color:var(--white);background:var(--ink)}body{position:fixed;inset:0}button,input{font:inherit}button,a,input{-webkit-tap-highlight-color:transparent}button{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:3px}button{color:inherit}button svg{width:20px;height:20px;flex-shrink:0}a{color:var(--gold)}[hidden]{display:none!important}button:disabled{opacity:.6;cursor:wait}
+#map{position:absolute;inset:0;background:#172a3b}.leaflet-tile-pane{transition:filter .5s}.map-night .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) saturate(.48) brightness(.82) contrast(1.08)}.map-winter .leaflet-tile-pane{filter:saturate(.28) brightness(1.08)}.leaflet-container{font-family:'DM Sans',sans-serif}.leaflet-control-attribution{font-size:11px;background:rgba(16,30,43,.9)!important;color:#c0ccd6;max-width:95vw}.leaflet-control-attribution a{color:var(--gold)}.leaflet-control-zoom{border:1px solid var(--line)!important;border-radius:14px!important;overflow:hidden;box-shadow:0 8px 20px #08121b33!important}.leaflet-control-zoom a{width:44px!important;height:44px!important;line-height:44px!important;background:var(--ink)!important;color:var(--gold)!important;border-color:var(--line)!important}.leaflet-top.leaflet-right{top:164px;right:14px}.leaflet-top .leaflet-control{margin:0}.leaflet-bottom{bottom:10px}.leaflet-popup-content-wrapper{background:var(--ink);color:var(--white);border:1px solid #d7b57488;border-radius:18px;box-shadow:0 18px 50px #0008;overflow:hidden;padding:0}.leaflet-popup-content{margin:0;width:300px!important;max-width:calc(100vw - 70px);max-height:63vh;overflow-y:auto}.leaflet-popup-tip{background:var(--ink)}.leaflet-popup-close-button{background:var(--ink)!important;color:var(--gold)!important;border-radius:50%;width:32px!important;height:32px!important;right:8px!important;top:8px!important;line-height:32px!important}.popup-image{width:100%;height:130px;object-fit:cover}.popup-body{padding:20px}.popup-body h2{font:600 28px/1.05 'Cormorant Garamond',serif;margin:8px 0 12px}.popup-body p{font-size:14px;line-height:1.55;margin:9px 0}.popup-meta{color:var(--muted)}.popup-actions{display:flex;gap:8px;margin:18px 0 10px;flex-wrap:wrap}.popup-actions a,.popup-actions button{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:10px 12px;text-decoration:none;font-size:14px}.popup-source{font-size:12px!important;color:var(--muted)}
+.map-pin{background:none;border:0}.pin{width:36px;height:36px;display:grid;place-items:center;background:#efc875;border:2px solid #fff0c2;border-radius:50% 50% 50% 7px;transform:rotate(-45deg);box-shadow:0 3px 12px #0008;transition:background .2s,box-shadow .2s}.pin svg{width:21px;height:21px;transform:rotate(45deg);fill:#273543}.pin-new{background:#b84943;border-color:#efb8a1}.pin-new svg{fill:#fff2dc}.pin-favorite{box-shadow:0 0 0 5px #f3ce8338,0 4px 16px #0008}.map-pin:hover .pin,.pin-selected{background:#fff3cf;box-shadow:0 0 0 6px #f3ce8333,0 4px 18px #0009}.pin-unconfirmed{background:#8998a1;border-color:#d5dce0}
+#sidebar{position:absolute;z-index:1000;left:22px;top:22px;bottom:22px;width:360px;display:flex;flex-direction:column;background:var(--ink);border:1px solid var(--line);border-radius:22px;box-shadow:0 18px 60px #06111a55;overflow:hidden}.brand{padding:25px 25px 20px;position:relative;border-bottom:1px solid var(--line)}.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:var(--gold);display:flex;gap:8px;align-items:center;font-weight:600}.eyebrow svg{width:17px;height:17px}.brand h1{font:600 47px/.97 'Cormorant Garamond',serif;letter-spacing:-.025em;margin:15px 0 13px}.brand h1 em{font-weight:500;color:var(--gold)}.brand-caption{color:var(--muted);font-size:14px;margin:0;line-height:1.5}.year{position:absolute;right:24px;top:25px;font-size:12px;color:var(--muted)}.handle{display:none}.filter-area{padding:18px 18px 13px;border-bottom:1px solid var(--line)}.search{display:flex;align-items:center;gap:9px;border:1px solid #465968;background:#1c3040;border-radius:11px;padding:0 12px}.search svg{width:19px;height:19px;color:var(--gold)}.search input{background:none;border:0;min-width:0;width:100%;height:45px;color:var(--white);outline:none;font-size:15px}.search input::placeholder{color:#b3c2cb}.filter-tabs{display:flex;gap:6px;margin-top:12px}.filter-tabs button{flex:1;padding:10px 4px;background:none;border:1px solid var(--line);border-radius:9px;font-size:13px;white-space:nowrap}.filter-tabs button[aria-pressed=true]{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:700}.results-line{display:flex;justify-content:space-between;align-items:center;margin-top:13px;gap:8px}.results-line p{font-size:12px;color:var(--muted);margin:0}.text-button{border:0;background:none;color:var(--gold);padding:6px 0;font-size:12px;min-height:36px}.unconfirmed{display:flex;align-items:center;gap:8px;margin:3px 0 0;color:var(--muted);font-size:11px;line-height:1.3;min-height:28px}.unconfirmed input{accent-color:var(--gold);width:15px;height:15px}.market-list{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#566670 transparent}.market-row{display:flex;align-items:center;border-bottom:1px solid #293c49;padding:3px 15px;transition:background .15s}.market-row:hover,.market-row.selected{background:#213848}.market-select{flex:1;min-width:0;background:none;border:0;text-align:left;padding:16px 3px;color:var(--white)}.market-select h3{font-size:15px;font-weight:500;line-height:1.4;margin:0 0 7px}.market-select p{font-size:12px;color:var(--muted);margin:4px 0;line-height:1.4}.market-select .district{font-size:11px;color:var(--gold);letter-spacing:.02em}.new-label{display:inline-block;margin-left:6px;font-size:10px;color:#ffc6b5;text-transform:uppercase;letter-spacing:.06em}.favorite{width:38px;height:42px;flex-shrink:0;border:0;background:none;color:#a8b8c4;font-size:25px}.favorite[aria-pressed=true]{color:var(--gold)}.empty{padding:30px 22px;color:var(--muted);font-size:14px;line-height:1.6}.empty strong{display:block;color:var(--white);margin-bottom:6px}.sidebar-footer{padding:13px 18px 14px;border-top:1px solid var(--line);background:#132431}.footer-line{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px}#weather{color:var(--white)}.data-note{font-size:10px;line-height:1.5;color:#a8bac5;margin:7px 0 0}.desktop-note{position:absolute;left:410px;bottom:29px;z-index:600;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#e5dfd1;background:#102231df;padding:10px 15px;border:1px solid var(--line);border-radius:30px;pointer-events:none}
+.toolbar{position:absolute;top:22px;right:22px;z-index:1000;display:flex;flex-direction:column;align-items:flex-end;gap:9px}.style-switch{display:flex;padding:4px;background:var(--ink);border:1px solid var(--line);border-radius:13px;box-shadow:0 4px 20px #08121b33}.style-switch button{padding:10px 13px;border:0;border-radius:9px;background:none;color:#c9d3d8;font-size:13px;min-height:40px}.style-switch button[aria-pressed=true]{background:var(--gold);color:var(--ink);font-weight:700}.map-actions{display:flex;gap:8px}.icon-button{width:45px;height:45px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--ink);border-radius:13px;color:var(--gold);box-shadow:0 4px 20px #08121b22}.icon-button[aria-pressed=false]{color:#9aaebd}.surprise{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--ink);color:var(--gold);padding:11px 16px;border-radius:12px;font-size:13px;min-height:44px}.legend{position:absolute;right:22px;bottom:42px;z-index:600;display:flex;gap:16px;background:#102231ed;padding:12px 15px;border:1px solid var(--line);border-radius:12px;font-size:11px;color:#e1e5e5}.legend span{display:flex;align-items:center;gap:7px}.legend i{width:9px;height:9px;border-radius:50%;background:var(--gold)}.legend .new-dot{background:var(--red)}#toast{position:absolute;left:50%;bottom:80px;transform:translateX(-50%);z-index:2200;max-width:85vw;background:var(--white);color:var(--ink);border-radius:12px;padding:14px 20px;font-size:14px;box-shadow:0 10px 35px #0004}#mapNotice{position:absolute;top:22px;left:410px;right:350px;z-index:1200;border:1px solid var(--gold);border-radius:12px;padding:14px;background:var(--ink);font-size:14px;margin:0}
+#snowfall{position:absolute;inset:0;z-index:650;overflow:hidden;pointer-events:none}.snowflake{position:absolute;top:-60px;left:var(--left);color:#fff;opacity:var(--opacity);font-size:var(--size);text-shadow:0 0 8px #d7ecff66;animation:fall var(--duration) linear var(--delay) infinite;will-change:transform;user-select:none}@keyframes fall{from{transform:translate3d(0,-60px,0) rotate(0deg)}to{transform:translate3d(var(--drift),calc(100dvh + 120px),0) rotate(190deg)}}
+@media(min-width:760px){#panelToggle{cursor:default}.leaflet-popup-content{max-height:70vh}}
+@media(max-width:759px){#sidebar{top:auto;bottom:max(12px,env(safe-area-inset-bottom));left:12px;right:12px;width:auto;height:72dvh;border-radius:20px;transition:transform .32s ease;transform:translateY(calc(100% - 92px))}#sidebar.expanded{transform:translateY(0)}.brand{padding:16px 19px 14px;min-height:92px;flex-shrink:0}.brand h1{font-size:29px;margin:7px 0 0;line-height:1}.brand h1 br{display:none}.brand h1 em{margin-left:5px}.brand-caption{display:none}.eyebrow{font-size:10px;letter-spacing:.14em}.eyebrow svg{width:13px;height:13px}.year{top:16px;right:40px;font-size:11px}.handle{display:block;position:absolute;right:18px;top:45px;color:var(--gold);font-size:20px;transition:transform .3s}.expanded .handle{transform:rotate(180deg)}.filter-area{padding:12px 14px 9px;flex-shrink:0}.search input{height:42px}.filter-tabs{margin-top:9px}.filter-tabs button{padding:9px 5px}.results-line{margin-top:4px}.unconfirmed{font-size:10px}.market-select{padding:12px 3px}.market-select h3{font-size:14px}.sidebar-footer{padding:9px 14px;flex-shrink:0}.data-note{font-size:9px;margin-top:4px}.toolbar{top:max(14px,env(safe-area-inset-top));right:12px;left:12px;align-items:flex-end;gap:8px}.style-switch{align-self:stretch;justify-content:center;background:#101e2bf2}.style-switch button{flex:1;padding:8px 6px;font-size:12px;min-height:38px}.map-actions{gap:7px}.icon-button{width:42px;height:42px}.surprise{font-size:12px;min-height:40px;padding:8px 12px}.leaflet-top.leaflet-right{right:12px;top:164px}.leaflet-control-zoom a{width:40px!important;height:40px!important;line-height:40px!important}.leaflet-bottom{bottom:112px}.legend{bottom:140px;right:12px;font-size:10px;padding:9px 12px;gap:12px}.desktop-note{display:none}.leaflet-popup-content{max-height:48dvh}.popup-body{padding:17px}.popup-body h2{font-size:26px}#toast{bottom:125px;width:max-content;max-width:88vw;font-size:13px}#mapNotice{left:12px;right:12px;top:217px;font-size:12px}}
+.snowflake{position:absolute;top:-60px;left:var(--left);color:#fff;font-size:var(--size);opacity:var(--opacity);text-shadow:0 0 7px #d9f4ff66;user-select:none;will-change:transform;animation:winterfall var(--duration) var(--delay) linear infinite}
+@keyframes winterfall{from{transform:translate3d(0,-30px,0) rotate(0deg)}to{transform:translate3d(var(--drift),calc(100dvh + 110px),0) rotate(100deg)}}
+@media(max-width:759px){#sidebar{top:auto;bottom:12px;left:12px;right:12px;width:auto;height:76dvh;max-height:calc(100dvh - 78px);border-radius:19px;transform:translateY(calc(100% - 94px));transition:transform .3s ease}#sidebar.expanded{transform:translateY(0)}.brand{padding:17px 19px;height:94px;min-height:94px;flex-shrink:0;cursor:pointer}.brand h1{font-size:34px;line-height:1;margin:11px 0 0;white-space:nowrap}.brand h1 br{display:none}.brand-caption{display:none}.eyebrow{font-size:9px;letter-spacing:.15em}.eyebrow svg{width:13px;height:13px}.year{top:18px;right:19px;font-size:10px}.handle{display:block;position:absolute;right:18px;bottom:12px;color:var(--gold);font-size:20px}.brand h1 em{font-size:32px}.filter-area{padding:12px 15px 8px}.sidebar-footer{padding:10px 15px}.leaflet-bottom{bottom:117px}.legend{bottom:145px}}
+@media(max-width:359px){.brand h1{font-size:29px}.brand h1 em{font-size:28px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}#snowfall{display:none}}
+</style>
 </head>
 <body>
-    <!-- Snowfall (Reduced for Mobile) -->
-    <div class="snowflake">❅</div>
-    <div class="snowflake">❅</div>
-    <div class="snowflake">❅</div>
-    <div class="snowflake">❅</div>
-    <div class="snowflake">❅</div>
-
-    <!-- Main Container -->
-    <div class="h-screen w-screen flex flex-col bg-stone-900 text-stone-200 relative overflow-hidden" style="position:fixed;inset:0">
-
-        <!-- Map Container -->
-        <div class="flex-grow h-full w-full relative">
-            <div id="map" class="h-full w-full"></div>
-            <p id="mapNotice" hidden role="status" class="absolute top-28 left-4 right-4 z-[2000] bg-stone-800 p-3 rounded text-sm">Hintergrundkarte derzeit nicht erreichbar. Die Marktliste bleibt verfügbar.</p>
-
-            <!-- Locate Button - Top Right -->
-            <div class="absolute top-4 right-4 z-[2000] safe-top">
-                <button onclick="locateUser(this)" class="locate-btn touch-target" title="Mein Standort" aria-label="Standort finden" >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
-                    </svg>
-                </button>
-            </div>
-        </div>
-
-        <!-- Mobile Sidebar - Lower z-index than map controls -->
-        <aside id="sidebar" class="sidebar collapsed z-[999] bg-stone-800/95 backdrop-blur-sm shadow-lg flex flex-col absolute bottom-0 left-0 right-0 h-[85vh] border-t-2 border-amber-500/30 safe-bottom">
-
-            <!-- Header - Touch Target -->
-            <header onclick="toggleSidebar()" class="touch-target px-4 py-6 bg-black/30 border-b border-black/30 shadow-lg cursor-pointer flex justify-between items-center">
-                <div class="flex-1">
-                    <h1 class="text-xl md:text-2xl font-bold text-stone-100 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 md:h-8 md:w-8 mr-2 text-amber-400" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2.5l2.42 5.38 5.58.81-4.04 3.93.95 5.56L12 15.4l-5.91 3.78.95-5.56-4.04-3.93 5.58-.81L12 2.5z"/>
-                        </svg>
-                        Weihnachtsmärkte 2026
-                    </h1>
-                    <p class="text-sm text-stone-400 mt-1" id="sidebarHint">
-                        Tippen zum Öffnen
-                    </p>
-                </div>
-                <div>
-                    <svg id="toggleIcon" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-amber-400 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
-                    </svg>
-                </div>
-            </header>
-
-            <div class="px-4 py-3 text-sm border-b border-stone-600">
-                <p id="marketCount" aria-live="polite"></p>
-                <p class="text-xs text-stone-400 mt-1">Stand: 25.11.2026. Quellen je Markt. Kartenpunkte zeigen ungefähre Standorte. Sondertage beachten.</p>
-                <label class="flex items-center gap-2 mt-2 touch-target"><input id="showUnconfirmed" type="checkbox" onchange="refreshMarkets()"> Auch Einträge ohne bestätigten Termin 2026 anzeigen</label>
-            </div>
-            <!-- Market List - Scrollable -->
-            <div id="marketList" class="overflow-y-auto flex-grow scroll-container"></div>
-
-            <!-- Weather Widget -->
-            <footer class="mt-auto bg-black/30 border-t border-black/30 safe-bottom">
-                <div id="weather" class="p-4 text-center text-stone-400">
-                    <div class="loading"></div>
-                </div>
-            </footer>
-        </aside>
-    </div>
-
-    <script>
-        // Recherche: 25.11.2026. Quellen und Unsicherheiten stehen an jedem Eintrag.
-        const MARKETS = [
+<div id="map" class="map-night" aria-label="Karte der Kölner Weihnachtsmärkte"></div>
+<div id="snowfall" aria-hidden="true"></div>
+<div class="toolbar" aria-label="Kartenansicht">
+ <div class="style-switch" role="group" aria-label="Kartenstil">
+  <button type="button" data-style="night" aria-pressed="true" onclick="setMapStyle('night')">☾ Winternacht</button>
+  <button type="button" data-style="winter" aria-pressed="false" onclick="setMapStyle('winter')">☀ Wintertag</button>
+  <button type="button" data-style="original" aria-pressed="false" onclick="setMapStyle('original')">Original</button>
+ </div>
+ <div class="map-actions">
+  <button class="icon-button" id="snowToggle" aria-label="Schneefall umschalten" aria-pressed="true" onclick="toggleSnow()" title="Schneefall umschalten">❄</button>
+  <button class="icon-button" aria-label="Alle gefilterten Märkte zeigen" title="Alle gefilterten Märkte zeigen" onclick="fitMarkets()">⊞</button>
+  <button class="icon-button" id="locateButton" aria-label="Meinen Standort finden" title="Meinen Standort finden" onclick="locateUser(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg></button>
+ </div>
+ <button class="surprise" onclick="surpriseMe()"><span aria-hidden="true">✧</span> Überrasch mich</button>
+</div>
+<p id="mapNotice" hidden role="status">Die Hintergrundkarte lädt gerade nicht. Du kannst die Marktliste weiterhin nutzen.</p>
+<aside id="sidebar" aria-label="Weihnachtsmärkte entdecken">
+ <header class="brand" id="panelToggle" role="button" tabindex="0" aria-label="Marktliste öffnen oder schließen" aria-expanded="false" onclick="toggleSidebar()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSidebar()}">
+  <span class="eyebrow"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 1 3 7 8 1-6 6 2 8-7-4-7 4 2-8-6-6 8-1z"/></svg>Dein Winter in Köln</span>
+  <span class="year">ADVENT 2026</span>
+  <h1>Köln im <br><em>Lichterglanz.</em></h1>
+  <p class="brand-caption">Kleine Buden. Große Vorfreude.<br>Finde deinen nächsten Lieblingsmarkt.</p>
+  <span class="handle" aria-hidden="true">⌃</span>
+ </header>
+ <div class="filter-area">
+  <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></svg><input id="marketSearch" type="search" aria-label="Markt oder Veedel suchen" placeholder="Markt oder Veedel suchen …" oninput="refreshMarkets()"></label>
+  <div class="filter-tabs" role="group" aria-label="Märkte filtern">
+   <button data-filter="all" aria-pressed="true" onclick="setFilter('all')">Alle Märkte</button>
+   <button data-filter="new" aria-pressed="false" onclick="setFilter('new')">Neu entdeckt</button>
+   <button data-filter="favorites" aria-pressed="false" onclick="setFilter('favorites')">♡ Merkliste</button>
+  </div>
+  <div class="results-line"><p id="marketCount" aria-live="polite"></p><button class="text-button" onclick="fitMarkets()">Auf Karte zeigen</button></div>
+  <label class="unconfirmed"><input id="showUnconfirmed" type="checkbox" onchange="refreshMarkets()">Auch 4 unbestätigte Einträge anzeigen</label>
+ </div>
+ <div id="marketList" class="market-list"></div>
+ <footer class="sidebar-footer"><div class="footer-line"><span id="weather">Wetter wird geladen …</span><span style="color:var(--gold)">Mitten ins Veedel. ♡</span></div><p class="data-note">Recherche: 25.11.2026 · Quellen bei jedem Markt<br>Standorte ungefähr. Sondertage und Tageszeiten beachten.</p></footer>
+</aside>
+<div class="desktop-note">Ein Winterspaziergang voller Lieblingsorte</div>
+<div class="legend"><span><i></i>Weihnachtsmarkt</span><span><i class="new-dot"></i>Neu in der Karte</span></div>
+<div id="toast" role="status" hidden></div>
+<script>
+const MARKETS = [
             {"id":1,"name":"Weihnachtsmarkt am Kölner Dom","lat":50.941278,"lon":6.958281,"start":"16.11.2026","end":"23.12.2026","ort":"Roncalliplatz 1","stadtteil":"Altstadt Nord","image":"https://www.koeln.de/wp-content/uploads/2023/08/weihnachtsmarkt-am-koelner-dom-imago-futureimage-95332928-1.jpg","desc":"Großer Markt mit Lichterzelt und hohem Weihnachtsbaum direkt am Dom","hours":"So bis Mi 11 bis 21 Uhr; Do und Fr 11 bis 22 Uhr; Sa 10 bis 22 Uhr. 22.11. geschlossen.","website":"https://www.koelnerweihnachtsmarkt.com/","source":"https://www.koelnerweihnachtsmarkt.com/de/","checked":"25.11.2026","note":""},
             {"id":2,"name":"Markt der Engel Neumarkt","lat":50.936002,"lon":6.947546,"start":"16.11.2026","end":"23.12.2026","ort":"Neumarkt 1","stadtteil":"Innenstadt","image":"https://www.koeln.de/wp-content/uploads/2023/08/weihnachtsmarkt-markt-der-engel-neumarkt-adobestock_188230906-1-800x470.jpeg","desc":"Stimmungsvoller Markt mit vielen Sternenlichtern und Engel-Deko","hours":"So bis Do 11 bis 21 Uhr; Fr und Sa 11 bis 22 Uhr. 22.11. geschlossen.","website":"https://www.markt-der-engel.de/","source":"https://www.markt-der-engel.de/","checked":"25.11.2026","note":""},
             {"id":3,"name":"Heinzels Wintermärchen, Alter Markt","lat":50.9394,"lon":6.9599,"start":"23.11.2026","end":"23.12.2026","ort":"Alter Markt","stadtteil":"Altstadt","image":"https://www.koeln.de/wp-content/uploads/2023/08/weihnachtsmarkt-koelner-altstadt-jochen-tack-imago95344912-1-800x470.jpg","desc":"Altstadtmarkt mit Handwerk und Themenständen. Die Eisbahn am Heumarkt ist separat eingetragen.","hours":"Täglich 11 bis 22 Uhr.","website":"https://www.heinzels-wintermaerchen.de/","source":"https://www.heinzels-wintermaerchen.de/zeiten-anfahrt/","checked":"25.11.2026","note":""},
@@ -366,283 +120,42 @@
             {"id":47,"name":"Nikolausmarkt am Schillplatz","lat":50.9639,"lon":6.9513,"ort":"Schillplatz","stadtteil":"Nippes","start":"07.12.2026","end":"20.12.2026","source":"https://www.koeln.de/weihnachten/weihnachtsmaerkte-koeln/weihnachtsmaerkte-koelner-stadtteile/","website":"https://www.koeln.de/weihnachten/weihnachtsmaerkte-koeln/weihnachtsmaerkte-koelner-stadtteile/","image":"","desc":"Kunsthandwerk und winterlicher Treffpunkt im Veedel.","hours":"Täglich 15 bis 21 Uhr.","note":"","checked":"25.11.2026","added":true},
             {"id":48,"name":"Rooftop-Weihnachtsmarkt SonnenscheinEtage","lat":50.9344,"lon":6.9552,"ort":"An St. Agatha 19 bis 25, Dachterrasse","stadtteil":"Altstadt Süd","start":"13.11.2026","end":"23.12.2026","source":"https://www.ksta.de/freizeit/weihnachtsmaerkte-koeln-und-region-2026-alle-termine-1-370139","website":"https://www.ksta.de/freizeit/weihnachtsmaerkte-koeln-und-region-2026-alle-termine-1-370139","image":"","desc":"Weihnachtsmarkt über den Dächern der Innenstadt.","hours":"Mo bis Do 16 bis 22 Uhr; Fr 16 bis 23 Uhr; Sa 14 bis 23 Uhr; So 14 bis 22 Uhr.","note":"","checked":"25.11.2026","added":true}
         ];
-
-        let map, markers = {}, selectedMarket = null, sidebarExpanded = false;
-
-        // Initialize Map with Mobile Settings
-        function initMap() {
-            console.log('🗺️ Initializing map...');
-
-
-            map = L.map('map', {
-                zoomControl: true,
-                attributionControl: true,
-                dragging: true,
-                tap: true,
-                touchZoom: true,
-                scrollWheelZoom: true,
-                doubleClickZoom: true,
-                boxZoom: true,
-                keyboard: true
-            }).setView([50.9375, 6.9603], 13);
-
-            console.log('✅ Map created with zoom controls');
-            console.log('📱 Touch zoom enabled:', map.options.touchZoom);
-            console.log('🖱️ Scroll wheel zoom enabled:', map.options.scrollWheelZoom);
-            console.log('🔍 Zoom level:', map.getZoom());
-
-            // Move zoom control to top left (separate from locate button)
-            map.zoomControl.setPosition('topleft');
-
-            // Live OpenStreetMap standard tiles, no API key. Respect the OSM tile policy.
-            const baseLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
-                maxZoom: 19
-            }).addTo(map);
-            let tileErrorCount = 0;
-            baseLayer.on('tileerror', () => {
-                tileErrorCount += 1;
-                if (tileErrorCount === 3) document.getElementById('mapNotice').hidden = false;
-            });
-            baseLayer.on('tileload', () => { document.getElementById('mapNotice').hidden = true; tileErrorCount = 0; });
-
-            // Enable dragging after map loads
-            setTimeout(() => {
-                map.dragging.enable();
-            }, 100);
-
-            // Add markers
-            MARKETS.forEach(market => {
-                const icon = L.divIcon({
-                    html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#e11d48" width="42" height="42" style="filter: drop-shadow(3px 3px 3px rgba(0,0,0,0.6));"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
-                    className: '',
-                    iconSize: [42, 42],
-                    iconAnchor: [21, 21]
-                });
-
-                const marker = L.marker([market.lat, market.lon], { icon })
-                    .addTo(map)
-                    .bindPopup(createPopupContent(market), {
-                        maxWidth: 300,
-                        className: 'mobile-popup'
-                    });
-
-                marker.on('click', () => selectMarket(market.id));
-                markers[market.id] = marker;
-                if (!market.source) map.removeLayer(marker);
-            });
-
-            refreshMarkets();
-            fetchWeather();
-        }
-
-        // Create Mobile-Optimized Popup
-        function createPopupContent(market) {
-            return `
-                <div class="w-full text-stone-200">
-                    ${market.image ? `<img src="${market.image}" alt="${market.name}" class="w-full h-40 object-cover rounded-t-lg" loading="lazy" onerror="this.hidden=true" />` : ''}
-                    <div class="p-4">
-                        <h3 class="text-lg font-bold mb-2 text-amber-400" style="font-family: 'Cinzel', serif;">
-                            ${market.name}
-                        </h3>
-                        <p class="text-xs text-amber-300 mb-2">📍 ${market.stadtteil}</p>
-                        <p class="text-sm text-stone-300 mb-3">${market.desc}</p>
-                        <div class="text-xs text-stone-400 space-y-1">
-                            <p><strong>Adresse:</strong> ${market.ort}</p>
-                            <p><strong>Zeitraum:</strong> ${marketPeriod(market)}</p>
-                            <p><strong>Öffnung:</strong> ${market.hours}</p>
-                            ${market.note ? `<p class="text-amber-300">${market.note}</p>` : ''}
-                            <p>Stand: ${market.checked}. Standort ungefähr.</p>
-                            ${market.source ? `<p><a href="${market.source}" target="_blank" rel="noopener" class="underline text-amber-300">Quelle für 2026 prüfen</a></p>` : '<p class="text-amber-300">Kein bestätigter Termin für 2026.</p>'}
-                        </div>
-                        ${market.website ? `<a href="${market.website}" target="_blank" rel="noopener" class="inline-block mt-3 text-xs text-amber-400 hover:text-amber-300 underline">→ Webseite</a>` : ''}
-                    </div>
-                </div>
-            `;
-        }
-
-        function marketPeriod(market) {
-            return market.source ? `${market.start} bis ${market.end}` : 'Termin 2026 noch nicht bestätigt';
-        }
-        function visibleMarkets() {
-            return MARKETS.filter(m => m.source || document.getElementById('showUnconfirmed').checked);
-        }
-        function refreshMarkets() {
-            const visible = new Set(visibleMarkets().map(m => m.id));
-            MARKETS.forEach(m => {
-                if (visible.has(m.id)) { if (!map.hasLayer(markers[m.id])) markers[m.id].addTo(map); }
-                else map.removeLayer(markers[m.id]);
-            });
-            document.getElementById('marketCount').textContent = `${MARKETS.filter(m => m.source).length} Standorte mit Termin 2026, ${MARKETS.filter(m => !m.source).length} noch unbestätigt`;
-            renderMarketList();
-        }
-        // Render Mobile-Optimized List
-        function renderMarketList() {
-            const listHtml = visibleMarkets().map(market => `
-                <div onclick="selectMarket(${market.id})"
-                     class="touch-target p-5 border-b border-black/20 active:bg-stone-700/70 transition-colors border-l-4 border-transparent"
-                     id="market-item-${market.id}"
-                     >
-                    <h3 class="font-semibold text-lg text-stone-200">${market.name}${market.added ? ' <span class="text-xs text-amber-300">Neu in der Karte</span>' : ''}</h3>
-                    <div class="text-sm text-stone-400 mt-1">
-                        <p>${market.ort}</p>
-                        <p class="text-xs mt-1">${marketPeriod(market)}</p>
-                    </div>
-                </div>
-            `).join('');
-
-            document.getElementById('marketList').innerHTML = listHtml;
-        }
-
-        // Select Market
-        function selectMarket(id) {
-            selectedMarket = id;
-            const market = MARKETS.find(m => m.id === id);
-
-            if (market) {
-                map.setView([market.lat, market.lon], 15);
-                setTimeout(() => markers[id].openPopup(), 300);
-
-                // Update selection
-                document.querySelectorAll('[id^="market-item-"]').forEach(el => {
-                    el.classList.remove('bg-amber-900/40', 'border-amber-400');
-                    el.classList.add('border-transparent');
-                });
-
-                const item = document.getElementById(`market-item-${id}`);
-                if (item) {
-                    item.classList.add('bg-amber-900/40', 'border-amber-400');
-                    item.classList.remove('border-transparent');
-                }
-
-                // Close sidebar
-                sidebarExpanded = false;
-                updateSidebarState();
-            }
-        }
-
-        // Toggle Sidebar
-        function toggleSidebar() {
-            sidebarExpanded = !sidebarExpanded;
-            updateSidebarState();
-        }
-
-        function updateSidebarState() {
-            const sidebar = document.getElementById('sidebar');
-            const icon = document.getElementById('toggleIcon');
-            const hint = document.getElementById('sidebarHint');
-
-            if (sidebarExpanded) {
-                sidebar.classList.remove('collapsed');
-                sidebar.classList.add('expanded');
-                icon.style.transform = 'rotate(180deg)';
-                hint.textContent = 'Tippen zum Schließen';
-            } else {
-                sidebar.classList.remove('expanded');
-                sidebar.classList.add('collapsed');
-                icon.style.transform = 'rotate(0deg)';
-                hint.textContent = 'Tippen zum Öffnen';
-            }
-        }
-
-        // Locate User with Better Mobile Support
-        function locateUser(btn) {
-            if (!navigator.geolocation) {
-                alert('Standortdienste werden nicht unterstützt');
-                return;
-            }
-
-            btn.innerHTML = '<div class="loading"></div>';
-
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-
-                    map.setView([lat, lon], 14);
-
-                    L.marker([lat, lon], {
-                        icon: L.divIcon({
-                            html: '<div style="width:20px;height:20px;background:#38bdf8;border:3px solid white;border-radius:50%;box-shadow:0 0 10px rgba(56,189,248,0.8);"></div>',
-                            className: '',
-                            iconSize: [20, 20]
-                        })
-                    }).addTo(map).bindPopup('Ihr Standort');
-
-                    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg>';
-                },
-                (error) => {
-                    alert('Standort konnte nicht ermittelt werden. Bitte Standortdienste in den Einstellungen aktivieren.');
-                    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg>';
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0
-                }
-            );
-        }
-
-        // Fetch Weather
-        function fetchWeather() {
-            fetch('https://api.open-meteo.com/v1/forecast?latitude=50.94&longitude=6.96&current=temperature_2m,weather_code')
-                .then(res => res.json())
-                .then(data => {
-                    const temp = Math.round(data.current.temperature_2m);
-                    const icon = getWeatherIcon(data.current.weather_code);
-
-                    document.getElementById('weather').innerHTML = `
-                        <div class="flex items-center justify-between text-stone-300">
-                            <div class="flex items-center gap-3">
-                                <div class="text-4xl">${icon}</div>
-                                <div class="text-left">
-                                    <p class="font-bold text-base text-stone-200">Köln</p>
-                                    <p class="text-sm">${getWeatherDesc(data.current.weather_code)}</p>
-                                </div>
-                            </div>
-                            <div class="text-2xl font-bold text-amber-400" style="font-family: 'Cinzel', serif;">
-                                ${temp}°C
-                            </div>
-                        </div>
-                    `;
-                })
-                .catch(() => {
-                    document.getElementById('weather').innerHTML = '<p class="text-rose-400 text-sm">Wetter nicht verfügbar</p>';
-                });
-        }
-
-        function getWeatherIcon(code) {
-            if (code === 0) return '☀️';
-            if (code < 4) return '⛅';
-            if (code < 50) return '☁️';
-            if (code < 70) return '🌧️';
-            if (code < 80) return '❄️';
-            return '⛈️';
-        }
-
-        function getWeatherDesc(code) {
-            if (code === 0) return 'Klar';
-            if (code < 4) return 'Teilweise bewölkt';
-            if (code < 50) return 'Nebel';
-            if (code < 70) return 'Regen';
-            if (code < 80) return 'Schnee';
-            return 'Gewitter';
-        }
-
-        // Initialize on load
-        window.addEventListener('load', initMap);
-
-        // Handle Orientation Changes
-        window.addEventListener('orientationchange', () => {
-            setTimeout(() => {
-                map.invalidateSize();
-            }, 100);
-        });
-
-        // Handle Resize
-        window.addEventListener('resize', () => {
-            map.invalidateSize();
-        });
-    </script>
+let map, markers = {}, selectedMarket = null, sidebarExpanded = false;
+let activeFilter='all', favorites=new Set(), userMarker=null, toastTimer;
+const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let snowEnabled=!reducedMotion;
+try { const saved=JSON.parse(localStorage.getItem('koeln-winter-favorites-v1')||'[]'); if(Array.isArray(saved)) favorites=new Set(saved.filter(x=>Number.isInteger(x))); } catch {}
+const star='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 2.9 6.2 6.8.8-5 4.7 1.4 6.8-6.1-3.4-6.1 3.4 1.4-6.8-5-4.7 6.8-.8z"/></svg>';
+function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function marketPeriod(m){return m.source?`${m.start} bis ${m.end}`:'Termin 2026 noch nicht bestätigt';}
+function markerIcon(m){return L.divIcon({className:'map-pin',html:`<span class="pin ${m.added?'pin-new':''} ${favorites.has(m.id)?'pin-favorite':''} ${!m.source?'pin-unconfirmed':''} ${m.id===selectedMarket?'pin-selected':''}">${star}</span>`,iconSize:[36,42],iconAnchor:[18,42],popupAnchor:[0,-36]});}
+function initMap(){
+ map=L.map('map',{zoomControl:false}).setView([50.941,6.959],13);L.control.zoom({position:'topright'}).addTo(map);
+ const tiles=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'}).addTo(map);
+ let failures=0;tiles.on('tileerror',()=>{if(++failures>=3)document.getElementById('mapNotice').hidden=false});tiles.on('tileload',()=>{failures=0;document.getElementById('mapNotice').hidden=true});
+ MARKETS.forEach(m=>{const marker=L.marker([m.lat,m.lon],{icon:markerIcon(m),title:m.name,alt:m.name}).bindPopup(createPopupContent(m),{maxWidth:300,autoPanPaddingTopLeft:[16,155],autoPanPaddingBottomRight:[16,120]});marker.on('click',()=>selectMarket(m.id));markers[m.id]=marker;});
+ refreshMarkets();createSnow();fetchWeather();
+ let style='night';try {const saved=localStorage.getItem('koeln-winter-style');if(['night','winter','original'].includes(saved))style=saved;}catch{}setMapStyle(style);
+ if(window.innerWidth>=760)map.panBy([-170,0],{animate:false});
+}
+function visibleMarkets(){const term=document.getElementById('marketSearch').value.trim().toLocaleLowerCase('de-DE');return MARKETS.filter(m=>(m.source||document.getElementById('showUnconfirmed').checked)&&(activeFilter!=='new'||m.added)&&(activeFilter!=='favorites'||favorites.has(m.id))&&(!term||`${m.name} ${m.stadtteil} ${m.ort}`.toLocaleLowerCase('de-DE').includes(term)));}
+function refreshMarkets(){if(!map)return;const visible=visibleMarkets();const ids=new Set(visible.map(m=>m.id));MARKETS.forEach(m=>{const marker=markers[m.id];if(ids.has(m.id)){if(!map.hasLayer(marker))marker.addTo(map);}else if(map.hasLayer(marker))map.removeLayer(marker);});document.getElementById('marketCount').textContent=`${visible.length} ${visible.length===1?'Lieblingsort wartet':'Orte zum Entdecken'}`;renderMarketList();}
+function setFilter(filter){activeFilter=filter;document.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter===filter)));refreshMarkets();}
+function renderMarketList(){const results=visibleMarkets();document.getElementById('marketList').innerHTML=results.length?results.map(m=>`<div class="market-row ${selectedMarket===m.id?'selected':''}" id="market-item-${m.id}"><button class="market-select" onclick="selectMarket(${m.id})"><p class="district">${escapeHtml(m.stadtteil)}${m.added?'<span class="new-label">Neu in der Karte</span>':''}</p><h3>${escapeHtml(m.name)}</h3><p>${escapeHtml(marketPeriod(m))}</p></button><button class="favorite" onclick="toggleFavorite(${m.id})" aria-label="${escapeHtml(m.name)} ${favorites.has(m.id)?'aus Merkliste entfernen':'merken'}" aria-pressed="${favorites.has(m.id)}">${favorites.has(m.id)?'♥':'♡'}</button></div>`).join(''):`<div class="empty"><strong>${activeFilter==='favorites'?'Deine Merkliste wartet auf dich.':'Hier ist es noch ganz still.'}</strong>${activeFilter==='favorites'?'Tippe auf ein Herz neben einem Markt, um ihn dir zu merken.':'Versuche einen anderen Suchbegriff oder wähle alle Märkte.'}</div>`;}
+function toggleFavorite(id){if(!MARKETS.some(m=>m.id===id))return;favorites.has(id)?favorites.delete(id):favorites.add(id);try{localStorage.setItem('koeln-winter-favorites-v1',JSON.stringify([...favorites]));}catch{notify('Merkliste ist in diesem Browser nur bis zum Schließen der Seite verfügbar.');}const m=MARKETS.find(m=>m.id===id);markers[id].setIcon(markerIcon(m));markers[id].setPopupContent(createPopupContent(m));refreshMarkets();}
+function createPopupContent(m){return `<article>${m.image?`<img class="popup-image" src="${escapeHtml(m.image)}" alt="${escapeHtml(m.name)}" loading="lazy" onerror="this.hidden=true">`:''}<div class="popup-body"><p class="eyebrow">${escapeHtml(m.stadtteil)}</p><h2>${escapeHtml(m.name)}</h2><p class="popup-meta">${escapeHtml(m.desc)}</p><p><strong>${escapeHtml(marketPeriod(m))}</strong></p><p>${escapeHtml(m.ort)}</p><p class="popup-meta">${escapeHtml(m.hours)}</p>${m.note?`<p>${escapeHtml(m.note)}</p>`:''}<div class="popup-actions"><button onclick="toggleFavorite(${m.id})" aria-pressed="${favorites.has(m.id)}">${favorites.has(m.id)?'♥ Gemerkt':'♡ Merken'}</button>${m.website?`<a href="${escapeHtml(m.website)}" target="_blank" rel="noopener">Webseite</a>`:''}</div>${m.source?`<a href="${escapeHtml(m.source)}" target="_blank" rel="noopener">Quelle für 2026</a>`:'<p>Durchführung für 2026 noch nicht bestätigt.</p>'}<p class="popup-source">Stand: ${escapeHtml(m.checked)}. Standort ungefähr.</p></div></article>`;}
+function selectMarket(id){const m=MARKETS.find(m=>m.id===id);if(!m)return;const previous=selectedMarket;selectedMarket=id;if(previous)markers[previous].setIcon(markerIcon(MARKETS.find(x=>x.id===previous)));markers[id].setIcon(markerIcon(m));if(!map.hasLayer(markers[id]))markers[id].addTo(map);sidebarExpanded=false;updateSidebarState();map.setView([m.lat,m.lon],15,{animate:!reducedMotion});markers[id].openPopup();renderMarketList();}
+function toggleSidebar(){if(window.innerWidth>=760)return;sidebarExpanded=!sidebarExpanded;updateSidebarState();}
+function updateSidebarState(){document.getElementById('sidebar').classList.toggle('expanded',sidebarExpanded);document.getElementById('panelToggle').setAttribute('aria-expanded',String(sidebarExpanded||window.innerWidth>=760));}
+function fitMarkets(){const results=visibleMarkets();if(!results.length){notify('Keine passenden Märkte gefunden.');return;}sidebarExpanded=false;updateSidebarState();map.fitBounds(L.latLngBounds(results.map(m=>[m.lat,m.lon])),{paddingTopLeft:window.innerWidth>=760?[410,90]:[50,180],paddingBottomRight:[70,160],maxZoom:15,animate:!reducedMotion});}
+function surpriseMe(){const options=visibleMarkets().filter(m=>m.id!==selectedMarket);if(!options.length){const only=visibleMarkets()[0];if(only)selectMarket(only.id);else notify('Wähle zuerst einen Filter mit Treffern.');return;}selectMarket(options[Math.floor(Math.random()*options.length)].id);}
+function setMapStyle(style){if(!['night','winter','original'].includes(style))return;document.getElementById('map').classList.remove('map-night','map-winter');if(style!=='original')document.getElementById('map').classList.add(`map-${style}`);document.querySelectorAll('[data-style]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.style===style)));try{localStorage.setItem('koeln-winter-style',style);}catch{}}
+function createSnow(){const layer=document.getElementById('snowfall');layer.innerHTML=Array.from({length:window.innerWidth<760?22:40},(_,i)=>`<span class="snowflake" style="--left:${(i*17.31)%100}%;--size:${18+(i*7)%25}px;--opacity:${.2+(i%5)*.12};--duration:${13+i%12}s;--delay:-${i%23}s;--drift:${(i%2?1:-1)*(25+i%80)}px">${i%3?'❄':'❅'}</span>`).join('');document.getElementById('snowToggle').setAttribute('aria-pressed',String(snowEnabled));layer.hidden=!snowEnabled;}
+function toggleSnow(){snowEnabled=!snowEnabled;document.getElementById('snowfall').hidden=!snowEnabled;document.getElementById('snowToggle').setAttribute('aria-pressed',String(snowEnabled));if(reducedMotion&&snowEnabled)notify('Deine Einstellung für reduzierte Bewegung bleibt aktiv.');}
+function notify(message){const toast=document.getElementById('toast');toast.textContent=message;toast.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.hidden=true,4200);}
+function locateUser(button){if(!navigator.geolocation){notify('Dieser Browser unterstützt keine Standortbestimmung.');return;}const original=button.innerHTML;button.disabled=true;navigator.geolocation.getCurrentPosition(position=>{const point=[position.coords.latitude,position.coords.longitude];if(userMarker)map.removeLayer(userMarker);userMarker=L.circleMarker(point,{radius:9,weight:3,color:'#fff',fillColor:'#69c7e6',fillOpacity:1}).addTo(map).bindPopup('Dein Standort');sidebarExpanded=false;updateSidebarState();map.setView(point,14);button.innerHTML=original;button.disabled=false;},()=>{button.innerHTML=original;button.disabled=false;notify('Standort nicht verfügbar. Bitte prüfe die Standortfreigabe.');},{enableHighAccuracy:true,timeout:10000,maximumAge:60000});}
+async function fetchWeather(){try{const res=await fetch('https://api.open-meteo.com/v1/forecast?latitude=50.94&longitude=6.96&current=temperature_2m,weather_code');if(!res.ok)throw Error();const {current}=await res.json();const code=current.weather_code;const icon=code===0?'☀':code<4?'⛅':code<50?'☁':code<70?'☂':code<80?'❄':'☈';document.getElementById('weather').textContent=`${icon} ${Math.round(current.temperature_2m)} °C in Köln`;}catch{document.getElementById('weather').textContent='Winter in Köln';}}
+window.addEventListener('load',initMap);window.addEventListener('resize',()=>{if(map)map.invalidateSize();updateSidebarState();});
+</script>
 </body>
 </html>
